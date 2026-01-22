@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type { TableWithStatus } from '~~/types'
+import type { TableWithStatus } from '~/types'
 
     const props = defineProps<{
       table: TableWithStatus,
     }>()
     
     const statusClasses = computed(() => ({
-  'bg-success shadow-success/40': props.table.status === 'free',
-  'bg-warning shadow-warning/40': props.table.status === 'reserved',
-  'bg-danger shadow-danger/40': props.table.status === 'busy'
+  'bg-success shadow-success/80': props.table.status === 'free',
+  'bg-warning shadow-warning/80': props.table.status === 'reserved',
+  'bg-danger shadow-danger/80': props.table.status === 'busy'
 }))
     </script>
     

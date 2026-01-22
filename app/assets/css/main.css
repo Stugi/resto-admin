@@ -19,8 +19,6 @@
   --spacing-sidebar: 16rem;
   --spacing-panel: 20rem;
   --spacing-header: 4rem;
-
-  --shadow-brand: 0 10px 15px -3px var(--color-brand);
 }
 
 @layer utilities {
