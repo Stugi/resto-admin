@@ -1,16 +1,19 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+import tailwindcss from '@tailwindcss/vite'
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@nuxtjs/tailwindcss'],
+
+  // Remove @nuxtjs/tailwindcss from modules
+  modules: [],
+
+  css: ['~/assets/css/main.css'],
+
   vite: {
-    css: {
-      preprocessorOptions: {
-        scss: {
-          additionalData: '@use "~/assets/scss/_palette.scss" as *;'
-        }
-      }
-    }
+    plugins: [
+      tailwindcss(),
+    ],
   },
-  css: ['~/assets/scss/main.scss']
+
+  // Remove postcss config - not needed with Vite plugin
 })

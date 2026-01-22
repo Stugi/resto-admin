@@ -1,9 +1,9 @@
 <!-- pages/index.vue -->
 <script setup lang="ts">
-
+import type { ZoneWithTables } from '~~/types'
     // Используем именованные слоты лейаута через DefinePageMeta или обычные слоты
     // Для начала оставим логику данных здесь
-    const { data: zones, pending } = await useFetch('/api/zones')
+    const { data: zones, pending } = await useFetch<ZoneWithTables[]>('/api/zones')
     const activeZoneId = ref<string | null>(null)
     
     watchEffect(() => {
@@ -34,11 +34,11 @@ onMounted(() => {
           :key="zone.id"
           @click="activeZoneId = zone.id"
           :class="[
-            'px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300',
-            activeZoneId === zone.id 
-              ? 'bg-brand text-black shadow-lg shadow-brand/10' 
-              : 'text-muted hover:text-white'
-          ]"
+    'px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300',
+    activeZoneId === zone.id 
+      ? 'bg-brand text-black shadow-xl shadow-brand/60' 
+      : 'text-muted hover:text-white'
+  ]"
         >
           {{ zone.name }}
         </button>

@@ -1,4 +1,6 @@
-export default defineEventHandler(async (event) => {
+import { ZoneWithTables } from '~~/types'
+
+export default defineEventHandler(async (event): Promise<ZoneWithTables[]> => {
     const now = new Date()
 
     // 1. Определяем границы "сегодня"
