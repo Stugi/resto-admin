@@ -1,0 +1,138 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("RESTO_DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. Пользователи (Сотрудники)
+model User {
+  id          String    @id @default(uuid())
+  login       String    @unique
+  name        String
+  secondname  String
+  thirdname   String?
+  
+  // Служебные поля
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  @@map("users")
+}
+
+// 2. Рестораны
+model Restaurant {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  slug        String    @unique
+
+  // Связи
+  schedules   Schedule[]
+  zones       Zone[]
+
+  // Служебные поля
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  
+  // login для аудита (просто строки, чтобы не усложнять связи на старте)
+  createdBy   String?   @map("created_by") // login
+  updatedBy   String?   @map("updated_by") // login
+  deletedBy   String?   @map("deleted_by") // login
+
+  @@map("restaurants")
+}
+
+// 3. График работы
+model Schedule {
+  id            String     @id @default(uuid())
+  restaurantId  String     @map("restaurant_id")
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+  
+  workingHours  Json       @map("working_hours") // { "mon": { "open": true, "start": "10:00", "end": "22:00" }, ... }
+
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  @@map("schedules")
+}
+
+// 4. Зоны (Основной зал, Терраса)
+model Zone {
+  id            String     @id @default(uuid())
+  restaurantId  String     @map("restaurant_id")
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+  name          String
+
+  tables        Table[]
+
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  deletedAt     DateTime?  @map("deleted_at")
+  createdBy     String?    @map("created_by")
+  updatedBy     String?    @map("updated_by")
+  deletedBy     String?    @map("deleted_by")
+
+  @@map("zones")
+}
+
+// 5. Столы
+model Table {
+  id            String    @id @default(uuid())
+  zoneId        String    @map("zone_id")
+  zone          Zone      @relation(fields: [zoneId], references: [id])
+  name          String    // Например, "14" или "VIP-1"
+  capacity      Int
+
+  reservations  Reservation[]
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+  createdBy     String?   @map("created_by")
+  updatedBy     String?   @map("updated_by")
+  deletedBy     String?   @map("deleted_by")
+
+  @@map("tables")
+}
+
+// 6. Гости
+model Guest {
+  id            String    @id @default(uuid())
+  phone         String    @unique
+  name          String
+
+  reservations  Reservation[]
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("guests")
+}
+
+// 7. Бронирования
+model Reservation {
+  id            String    @id @default(uuid())
+  tableId       String    @map("table_id")
+  table         Table     @relation(fields: [tableId], references: [id])
+  guestId       String    @map("guest_id")
+  guest         Guest     @relation(fields: [guestId], references: [id])
+
+  startTime     DateTime  @map("start_time")
+  endTime       DateTime  @map("end_time")
+  peopleCount   Int       @map("people_count")
+atus        String    @default("confirmed") @map("status") // confirmed, seated, finished, cancelled
+
+  createdBy     String?   @map("created_by") // login
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+  updatedBy     String?   @map("updated_by")
+  deletedBy     String?   @map("deleted_by")
+
+  @@map("reservations")
+}
