@@ -1,61 +1,31 @@
 <script setup lang="ts">
 import type { ZoneWithTables } from "~~/types"
-// Data
-const { data: zones, pending } = await useFetch<ZoneWithTables[]>("/api/zones")
+// Ref
+const { data: zones } = await useFetch<ZoneWithTables[]>("/api/zones")
+const { data: reservations, refresh: refreshReservations } = await useFetch("/api/reservations")
+
 const activeZoneId = ref<string | null>(null)
 const selectedTableId = ref<string | null>(null)
+const isMounted = ref<boolean>(false)
+
+const { showToast } = useToast()
+
+// Computed
 const selectedTable = computed(() =>
     zones.value?.flatMap((z) => z.tables).find((t) => t.id === selectedTableId.value),
 )
 
-// Состояние формы
-const isSubmitting = ref(false)
-const reservationForm = reactive({
-    guestName: "",
-    guestPhone: "",
-    startTime: "19:00",
-    peopleCount: 2,
-})
-
 const currentZone = computed(() => zones.value?.find((z) => z.id === activeZoneId.value))
 
-const isMounted = ref<boolean>(false)
-
 // Methods
-const handleCreateReservation = async () => {
-    if (!selectedTableId.value) return
-
-    isSubmitting.value = true
-    try {
-        await $fetch("/api/reservations", {
-            method: "POST",
-            body: {
-                tableId: selectedTableId.value,
-                ...reservationForm,
-            },
-        })
-
-        // Сбрасываем выбор и форму
-        selectedTableId.value = null
-        reservationForm.guestName = ""
-        reservationForm.guestPhone = ""
-
-        // Обновляем данные на карте (стол станет красным)
-        await refreshNuxtData()
-        alert("Бронь создана!")
-    } catch (e: any) {
-        alert(e.data?.message || "Ошибка бронирования")
-    } finally {
-        isSubmitting.value = false
-    }
-}
-
 const handleSelectTable = (tableId: string | null) => {
     selectedTableId.value = tableId
 }
 
-const handleSuccess = () => {
+const handleSuccess = async () => {
     selectedTableId.value = null
+    await Promise.all([refreshNuxtData(), refreshReservations()])
+    showToast("Бронирование создано!", "success")
 }
 
 // Watches
@@ -84,7 +54,7 @@ useHead({
             </div>
             <div class="p-6 space-y-8 overflow-y-auto scrollbar-thin">
                 <!-- Блок статистики -->
-                <div class="space-y-1">
+                <section class="space-y-4">
                     <p class="text-2xs uppercase tracking-widest text-muted font-bold">
                         Брони на сегодня
                     </p>
@@ -92,7 +62,8 @@ useHead({
                         24
                         <span class="text-sm text-success font-medium not-italic ml-2">↑ 15%</span>
                     </div>
-                </div>
+                </section>
+                <ReservationSidebarList :reservations="reservations" />
             </div>
         </aside>
 
@@ -118,7 +89,7 @@ useHead({
                 <h2 class="text-2xl font-black italic text-brand uppercase tracking-tighter mb-8">
                     Стол {{ selectedTable.name }}
                 </h2>
-                <ReservationForm
+                <BookingForm
                     :table="selectedTable"
                     @success="handleSuccess"
                     @cancel="selectedTableId = null"

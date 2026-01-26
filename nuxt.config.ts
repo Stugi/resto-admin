@@ -7,6 +7,13 @@ export default defineNuxtConfig({
   // Remove @nuxtjs/tailwindcss from modules
   modules: ['@nuxt/icon'],
 
+  components: [
+    {
+      path: '~/components',
+      pathPrefix: false, // Это позволит не добавлять имя папки к названию компонента
+    },
+  ],
+
   css: ['~/assets/css/main.css'],
 
   vite: {
