@@ -74,9 +74,9 @@ useHead({
 })
 </script>
 <template>
-    <div class="flex h-screen overflow-hidden bg-bg">
+    <div class="flex h-full overflow-hidden">
         <!-- 1. ЛЕВАЯ ПАНЕЛЬ -->
-        <aside class="w-sidebar border-r border-white-5 flex flex-col shrink-0">
+        <aside class="w-sidebar border-r border-white-5 flex flex-col shrink-0 bg-bg">
             <div
                 class="h-header flex items-center px-6 border-b border-white-5 text-brand font-black italic tracking-tighter text-xl uppercase"
             >
@@ -98,26 +98,6 @@ useHead({
 
         <!-- 2. ЦЕНТРАЛЬНАЯ ЧАСТЬ -->
         <main class="flex-1 flex flex-col min-w-0">
-            <header
-                class="h-header border-b border-white-5 flex items-center justify-between px-safe shrink-0"
-            >
-                <span class="text-sm font-medium text-muted">21 января • 09:30</span>
-
-                <div class="flex items-center gap-3">
-                    <div class="text-right">
-                        <p class="text-sm font-bold uppercase tracking-tight">Анна Новикова</p>
-                        <p class="text-2xs text-muted uppercase font-bold tracking-widest">
-                            Хостес
-                        </p>
-                    </div>
-                    <div
-                        class="w-10 h-10 rounded-2xl bg-brand text-black flex items-center justify-center font-black shadow-lg shadow-brand/20"
-                    >
-                        АН
-                    </div>
-                </div>
-            </header>
-
             <div class="flex-1 overflow-y-auto p-safe scrollbar-thin">
                 <div class="space-y-8">
                     <!-- Здесь твои табы и TableMap -->
