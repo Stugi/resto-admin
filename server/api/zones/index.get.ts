@@ -1,17 +1,30 @@
 import { ZoneWithTables } from '~~/types'
+import { startOfDay, endOfDay, parseISO, addHours } from 'date-fns'
 
 export default defineEventHandler(async (event): Promise<ZoneWithTables[]> => {
-    const now = new Date()
+    const query = getQuery(event)
 
-    // 1. Определяем границы "сегодня"
-    const startOfToday = new Date(now)
-    startOfToday.setHours(0, 0, 0, 0)
+    const dateParam = query.date as string
+    const targetDate = dateParam ? parseISO(dateParam) : new Date()
 
-    const endOfToday = new Date(now)
-    endOfToday.setHours(23, 59, 59, 999)
+    const start = startOfDay(targetDate)
+    const end = endOfDay(targetDate)
 
-    // Граница для статуса "Reserved" (например, забронировано в ближайшие 2 часа)
-    const soonLimit = new Date(now.getTime() + 2 * 60 * 60 * 1000)
+    // 2. Определяем "время просмотра" (viewTime)
+    // Если в query пришло "18:30", создаем объект даты на это время
+    const viewTimeParam = query.viewTime as string // формат "HH:mm"
+    let comparisonTime: Date
+
+    if (viewTimeParam) {
+        const [hours, minutes] = viewTimeParam.split(':')
+        comparisonTime = new Date(targetDate)
+        comparisonTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+    } else {
+        comparisonTime = new Date() // По умолчанию - текущее время
+    }
+
+    // Граница для статуса "Забронирован скоро" (+2 часа от точки просмотра)
+    const soonLimit = addHours(comparisonTime, 2)
 
     const zones = await prisma.zone.findMany({
         where: { deletedAt: null },
@@ -21,7 +34,7 @@ export default defineEventHandler(async (event): Promise<ZoneWithTables[]> => {
                     reservations: {
                         where: {
                             deletedAt: null, status: { in: ['confirmed', 'seated'] },
-                            startTime: { gte: startOfToday, lte: endOfToday },
+                            startTime: { gte: start, lte: end },
                         },
                         orderBy: { startTime: 'asc' }
                     }
@@ -35,20 +48,24 @@ export default defineEventHandler(async (event): Promise<ZoneWithTables[]> => {
     return zones.map(zone => ({
         ...zone,
         tables: zone.tables.map(table => {
-            let status = 'free'
+            let status: TableStatus = 'free'
 
             // Бронь прямо сейчас?
-            const current = table.reservations.find(res =>
-                now >= res.startTime && now <= res.endTime
+            const currentBooking = table.reservations.find(res =>
+                comparisonTime >= res.startTime && comparisonTime < res.endTime
             )
+
 
             // Бронь начнется скоро (в ближайшие 2 часа)?
-            const upcoming = table.reservations.find(res =>
-                res.startTime > now && res.startTime <= soonLimit
+            const upcomingBooking = table.reservations.find(res =>
+                res.startTime >= comparisonTime && res.startTime <= soonLimit
             )
 
-            if (current) status = 'busy'
-            else if (upcoming) status = 'reserved'
+            if (currentBooking) {
+                status = 'busy'
+            } else if (upcomingBooking) {
+                status = 'reserved'
+            }
 
             return {
                 ...table,

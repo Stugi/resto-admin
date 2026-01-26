@@ -1,16 +1,27 @@
 <script setup lang="ts">
 import type { ZoneWithTables } from "~~/types"
-// Ref
-const { data: zones } = await useFetch<ZoneWithTables[]>("/api/zones")
-const { data: reservations, refresh: refreshReservations } = await useFetch("/api/reservations")
+import { format } from "date-fns"
+
+const { selectedDate } = useDashboardDate()
+const { showToast } = useToast()
+
+// Ref & Computed
+const dateQuery = computed(() => format(selectedDate.value, "yyyy-MM-dd"))
+
+const { data: zones, refresh: refreshZones } = await useFetch("/api/zones", {
+    query: { date: dateQuery },
+})
+const { data: reservations, refresh: refreshReservations } = await useFetch<ZoneWithTables[]>(
+    "/api/reservations",
+    {
+        query: { date: dateQuery },
+    },
+)
 
 const activeZoneId = ref<string | null>(null)
 const selectedTableId = ref<string | null>(null)
 const isMounted = ref<boolean>(false)
 
-const { showToast } = useToast()
-
-// Computed
 const selectedTable = computed(() =>
     zones.value?.flatMap((z) => z.tables).find((t) => t.id === selectedTableId.value),
 )

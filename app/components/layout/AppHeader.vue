@@ -51,7 +51,7 @@ onMounted(() => {
                 </button>
 
                 <span
-                    class="font-body font-bold text-sm min-w-[160px] text-center tracking-wide text-white"
+                    class="font-body font-bold text-sm min-w-[200px] text-center tracking-wide text-white whitespace-nowrap"
                 >
                     {{ formattedDate }}
                 </span>
