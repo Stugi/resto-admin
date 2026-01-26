@@ -3,82 +3,88 @@
 const currentTime = ref("--:--")
 const currentDate = ref("Загрузка...")
 
-onMounted(() => {
-    const update = () => {
-        const now = new Date()
-        currentTime.value = now.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })
-        currentDate.value = now.toLocaleDateString("ru-RU", { day: "numeric", month: "long" })
-    }
-    update()
-    setInterval(update, 1000)
-})
+const { formattedDate, nextDay, prevDay } = useDashboardDate()
 
 const changeDate = (delta: number) => {
     console.log("Navigate date:", delta)
 }
+
+onMounted(() => {
+    const update = () => {
+        currentTime.value = new Date().toLocaleTimeString("ru-RU", {
+            hour: "2-digit",
+            minute: "2-digit",
+        })
+    }
+    update()
+    setInterval(update, 1000)
+})
 </script>
 
 <template>
     <header
         class="h-header bg-surface border-b border-white-5 flex items-center justify-between px-6 shrink-0 z-50"
     >
-        <!-- Левая часть: Logo -->
-        <div class="flex items-center gap-3">
+        <!-- ЛОГОТИП: Serif, Resto(white) Admin(gold) -->
+        <div class="flex items-center gap-4 cursor-default">
             <div
-                class="w-9 h-9 bg-linear-to-br from-brand to-brand-dim rounded-lg flex items-center justify-center shadow-lg shadow-brand/10"
+                class="w-10 h-10 bg-brand rounded-2xl flex items-center justify-center shadow-lg shadow-brand/10"
             >
-                <span class="text-xl">🍽️</span>
+                <span class="text-2xl">🍽️</span>
             </div>
-            <h1 class="font-display text-logo font-xl tracking-tight text-white">
-                Resto<span class="text-brand not-italic">Admin</span>
+            <h1 class="font-display text-logo font-medium tracking-tight text-white leading-none">
+                Resto<span class="text-brand">Admin</span>
             </h1>
         </div>
 
-        <!-- Центр: Навигация и Время -->
-        <div class="flex items-center gap-6">
-            <!-- Переключатель даты -->
+        <!-- ЦЕНТР: Навигация по дате и Время -->
+        <div class="flex items-center gap-10">
+            <!-- Контейнер даты: DM Sans -->
             <div
-                class="flex items-center gap-4 bg-surface-light px-4 py-1.5 rounded-xl border border-white-5"
+                class="flex items-center gap-4 bg-[#0F0F10] px-4 py-2 rounded-xl border border-white-5 shadow-inner"
             >
                 <button
-                    @click="changeDate(-1)"
-                    class="text-muted hover:text-white transition-colors cursor-pointer"
+                    @click="prevDay"
+                    class="text-muted hover:text-white transition-colors cursor-pointer p-1"
                 >
-                    <Icon name="lucide:chevron-left" size="18" />
+                    <Icon name="bi:caret-left-fill" size="16" />
                 </button>
+
                 <span
-                    class="font-body font-bold text-sm min-w-[140px] text-center tracking-wide capitalize"
+                    class="font-body font-bold text-sm min-w-[160px] text-center tracking-wide text-white"
                 >
-                    Сегодня, {{ currentDate }}
+                    {{ formattedDate }}
                 </span>
+
                 <button
-                    @click="changeDate(1)"
-                    class="text-muted hover:text-white transition-colors cursor-pointer"
+                    @click="nextDay"
+                    class="text-muted hover:text-white transition-colors cursor-pointer p-1"
                 >
-                    <Icon name="lucide:chevron-right" size="18" />
+                    <Icon name="bi:caret-right-fill" size="16" />
                 </button>
             </div>
 
-            <!-- Время -->
-            <div class="text-3xl font-bold font-display text-brand tracking-[0.1em] tabular-nums">
+            <!-- ВРЕМЯ: Cormorant, Gold, Bold -->
+            <div
+                class="text-[36px] font-bold font-display text-brand tracking-widest tabular-nums leading-none"
+            >
                 {{ currentTime }}
             </div>
         </div>
 
-        <!-- Правая часть: Юзер -->
-        <div class="flex items-center gap-4">
+        <!-- ПРАВАЯ ЧАСТЬ: Профиль (DM Sans) -->
+        <div class="flex items-center gap-4 font-body">
             <div
-                class="flex items-center gap-3 p-1 pr-3 bg-surface-light border border-white-5 rounded-xl hover:border-brand/30 transition-all cursor-pointer group"
+                class="flex items-center gap-3 p-1.5 pr-4 bg-surface-light border border-white-5 rounded-2xl hover:border-brand/30 transition-all cursor-pointer group"
             >
-                <!-- Аватар с градиентом из прототипа -->
                 <div
-                    class="w-8 h-8 bg-linear-to-br from-emerald-400 to-sky-400 rounded-lg flex items-center justify-center text-white text-xs"
+                    class="w-8 h-8 bg-linear-to-br from-emerald-400 to-sky-400 rounded-xl flex items-center justify-center text-[11px] font-white shadow-sm"
                 >
                     АН
                 </div>
                 <div class="flex flex-col leading-tight">
                     <span
-                        class="text-sm font-bold text-white group-hover:text-brand transition-colors"
+                        class="text-[13px] font-bold text-white group-hover:text-brand transition-colors"
                         >Анна Новикова</span
                     >
                     <span class="text-[10px] text-muted font-bold uppercase tracking-widest"
@@ -90,6 +96,14 @@ const changeDate = (delta: number) => {
     </header>
 </template>
 
+<style scoped>
+.font-display {
+    font-family: var(--font-display);
+}
+.font-body {
+    font-family: var(--font-body);
+}
+</style>
 <style scoped>
 /* Дополнительная страховка для шрифта, если Google Fonts не подтянулись глобально */
 .font-display {
