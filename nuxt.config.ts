@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   // Remove @nuxtjs/tailwindcss from modules
-  modules: [],
+  modules: ['@nuxt/icon'],
 
   css: ['~/assets/css/main.css'],
 

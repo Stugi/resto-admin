@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { TableWithStatus } from "~~/types"
 
+const { showToast } = useToast()
+
 const props = defineProps<{
     table: TableWithStatus
 }>()
@@ -32,8 +34,9 @@ const handleFormSubmit = async () => {
 
         await refreshNuxtData()
         emit("success")
+        showToast("Бронь успешно создана", "success")
     } catch (e: any) {
-        alert(e.data?.message || "Ошибка бронирования")
+        showToast(e.data?.message || "Ошибка бронирования", "error")
     } finally {
         isSubmitting.value = false
     }
