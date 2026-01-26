@@ -47,11 +47,6 @@ useHead({
     <div class="flex h-full overflow-hidden">
         <!-- 1. ЛЕВАЯ ПАНЕЛЬ -->
         <aside class="w-sidebar border-r border-white-5 flex flex-col shrink-0 bg-bg">
-            <div
-                class="h-header flex items-center px-6 border-b border-white-5 text-brand font-black italic tracking-tighter text-xl uppercase"
-            >
-                RestoAdmin
-            </div>
             <div class="p-6 space-y-8 overflow-y-auto scrollbar-thin">
                 <!-- Блок статистики -->
                 <section class="space-y-4">

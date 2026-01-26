@@ -1,42 +1,81 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #E2B15B;
-  --color-brand-light: #FFD58F;
-  --color-bg: #0A0A0A;
-  --color-surface: #141414;
-  --color-surface-light: #1A1A1A;
-  --color-success: #22C55E;
-  --color-warning: #F97316;
-  --color-danger: #EF4444;
-  --color-muted: #6B7280;
-  --color-white-5: rgba(255, 255, 255, 0.05);
+    --color-brand: #d4a853;
+    --color-brand-dim: #b8923f;
+    --color-brand-light: #ffd58f;
+    --color-bg: #0a0a0a;
+    --color-surface: #141414;
+    --color-surface-light: #1a1a1a;
+    --color-success: #22c55e;
+    --color-warning: #f97316;
+    --color-danger: #ef4444;
+    --color-muted: #6b7280;
+    --color-white-5: rgba(255, 255, 255, 0.05);
 
-  --font-size-2xs: 0.625rem;
-  --line-height-2xs: 1rem;
+    --font-display: "Cormorant Garamond", serif;
+    --font-body: "DM Sans", sans-serif;
 
-  --spacing-safe: 2rem;
-  --spacing-sidebar: 16rem;
-  --spacing-panel: 20rem;
-  --spacing-header: 4rem;
+    /* ТИПОГРАФИЧЕСКАЯ СЕТКА */
+
+    /* 10px — Самые мелкие подписи, бейджи */
+    --font-size-2xs: 0.625rem;
+    --line-height-2xs: 1rem;
+
+    /* 12px — Вспомогательный текст, мета-данные */
+    --font-size-xs: 0.75rem;
+    --line-height-xs: 1rem;
+
+    /* 14px — Основной текст (Body), текст в инпутах */
+    --font-size-sm: 0.875rem;
+    --line-height-sm: 1.25rem;
+
+    /* 16px — Кнопки, важные элементы списка */
+    --font-size-base: 1rem;
+    --line-height-base: 1.5rem;
+
+    /* 20px — Заголовки карточек, разделов */
+    --font-size-xl: 1.25rem;
+    --line-height-xl: 1.75rem;
+
+    /* 24px — Заголовки страниц */
+    --font-size-2xl: 1.5rem;
+    --line-height-2xl: 2rem;
+
+    /* 28px — Наш Логотип */
+    --font-size-logo: 1.75rem;
+    --line-height-logo: 1;
+
+    /* 32px+ — Большие часы и акценты */
+    --font-size-display: 2rem;
+    --line-height-display: 1;
+
+    --spacing-safe: 2rem;
+    --spacing-sidebar: 16rem;
+    --spacing-panel: 20rem;
+    --spacing-header: 4rem;
+}
+
+body {
+    font-family: var(--font-body);
 }
 
 @layer utilities {
-  .scrollbar-thin {
-    &::-webkit-scrollbar {
-      width: 4px;
-    }
+    .scrollbar-thin {
+        &::-webkit-scrollbar {
+            width: 4px;
+        }
 
-    &::-webkit-scrollbar-thumb {
-      @apply bg-surface-light rounded-full;
+        &::-webkit-scrollbar-thumb {
+            @apply bg-surface-light rounded-full;
 
-      &:hover {
-        background-color: #2A2A2A;
-      }
-    }
+            &:hover {
+                background-color: #2a2a2a;
+            }
+        }
 
-    &::-webkit-scrollbar-track {
-      background: transparent;
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
     }
-  }
 }
