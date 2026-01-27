@@ -4,17 +4,20 @@ import { format } from "date-fns"
 
 const { selectedDate } = useDashboardDate()
 const { showToast } = useToast()
+const route = useRoute()
 
 // Ref & Computed
+const slug = route.params.slug as string
+
 const dateQuery = computed(() => format(selectedDate.value, "yyyy-MM-dd"))
 
 const { data: zones, refresh: refreshZones } = await useFetch("/api/zones", {
-    query: { date: dateQuery },
+    query: { date: dateQuery, restaurantSlug: slug },
 })
 const { data: reservations, refresh: refreshReservations } = await useFetch<ZoneWithTables[]>(
     "/api/reservations",
     {
-        query: { date: dateQuery },
+        query: { date: dateQuery, restaurantSlug: slug },
     },
 )
 
@@ -52,6 +55,10 @@ onMounted(() => {
 // SEO-оптимизация
 useHead({
     title: "RestoAdmin — Карта столов",
+})
+
+definePageMeta({
+    requiresRestaurantContext: true,
 })
 </script>
 <template>

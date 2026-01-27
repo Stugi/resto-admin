@@ -1,9 +1,10 @@
-import { ZoneWithTables } from '~~/types'
+import { ZoneWithTables, TableStatus } from '~~/types'
 import { startOfDay, endOfDay, parseISO, addHours } from 'date-fns'
 
 export default defineEventHandler(async (event): Promise<ZoneWithTables[]> => {
     const query = getQuery(event)
 
+    const restaurantSlug = query.restaurantSlug as string
     const dateParam = query.date as string
     const targetDate = dateParam ? parseISO(dateParam) : new Date()
 
@@ -27,7 +28,7 @@ export default defineEventHandler(async (event): Promise<ZoneWithTables[]> => {
     const soonLimit = addHours(comparisonTime, 2)
 
     const zones = await prisma.zone.findMany({
-        where: { deletedAt: null },
+        where: { deletedAt: null, restaurant: { slug: restaurantSlug } },
         include: {
             tables: {
                 include: {
