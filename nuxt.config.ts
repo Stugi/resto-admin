@@ -4,8 +4,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
-  // Remove @nuxtjs/tailwindcss from modules
-  modules: ['@nuxt/icon'],
+  modules: ['@nuxt/icon', '@nuxt/fonts'],
 
   components: [
     {
