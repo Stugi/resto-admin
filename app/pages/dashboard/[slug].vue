@@ -14,12 +14,21 @@ const dateQuery = computed(() => format(selectedDate.value, "yyyy-MM-dd"))
 const { data: zones, refresh: refreshZones } = await useFetch("/api/zones", {
     query: { date: dateQuery, restaurantSlug: slug },
 })
-const { data: reservations, refresh: refreshReservations } = await useFetch<ZoneWithTables[]>(
-    "/api/reservations",
-    {
-        query: { date: dateQuery, restaurantSlug: slug },
-    },
-)
+const {
+    data: reservations,
+    error: zonesError,
+    refresh: refreshReservations,
+} = await useFetch<ZoneWithTables[]>("/api/reservations", {
+    query: { date: dateQuery, restaurantSlug: slug },
+})
+
+// Если зоны не загрузились — 404
+if (zonesError.value || !zones.value?.length) {
+    throw createError({
+        statusCode: 404,
+        message: `Ресторан "${slug}" не найден`,
+    })
+}
 
 const activeZoneId = ref<string | null>(null)
 const selectedTableId = ref<string | null>(null)
@@ -38,7 +47,7 @@ const handleSelectTable = (tableId: string | null) => {
 
 const handleSuccess = async () => {
     selectedTableId.value = null
-    await Promise.all([refreshNuxtData(), refreshReservations()])
+    await Promise.all([refreshZones(), refreshReservations()])
     showToast("Бронирование создано!", "success")
 }
 
@@ -59,6 +68,7 @@ useHead({
 
 definePageMeta({
     requiresRestaurantContext: true,
+    validateRestaurant: true,
 })
 </script>
 <template>
