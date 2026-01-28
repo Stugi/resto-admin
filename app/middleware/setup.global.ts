@@ -1,13 +1,21 @@
 import type { UserWithRestaurants } from '~~/types'
 
 export default defineNuxtRouteMiddleware(async (to) => {
-    // Проверяем: либо мы на корне, либо страница требует контекста, но слаг в URL отсутствует
-    const needsContext = to.path === '/' || (to.meta.requiresRestaurantContext && !to.params.slug)
+    const REDIRECT_ENTRY_POINTS = ['/', '/dashboard', '/dashboard/']
 
-    if (needsContext) {
-        const user = await $fetch<UserWithRestaurants>('/api/me')
-        if (user?.restaurants?.length) {
-            return navigateTo(`/dashboard/${user.restaurants[0]?.slug}`)
+    if (REDIRECT_ENTRY_POINTS.includes(to.path)) {
+        try {
+            const user = await $fetch<UserWithRestaurants>('/api/me')
+
+            if (user?.restaurants[0]) {
+                const firstSlug = user.restaurants[0].slug
+                return navigateTo(`/dashboard/${firstSlug}`)
+            } else {
+                throw createError({ statusCode: 403, statusMessage: 'Нет доступа к ресторанам' })
+            }
+        } catch (error) {
+            console.error('Initial context error:', error)
+            // Здесь можно добавить редирект на логин, если сессия протухла
         }
     }
 })
