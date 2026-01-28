@@ -61,9 +61,20 @@ watchEffect(() => {
 onMounted(() => {
     isMounted.value = true
 })
-// SEO-оптимизация
+
+// SEO
+useSeoMeta({
+    ogTitle: "RestoAdmin - Умное бронирование",
+    description: "Профессиональная система управления столами и гостями.",
+    ogDescription: "Лучший инструмент для вашего ресторана.",
+    ogImage: "https://mysite.com/logo.png",
+    twitterCard: "summary_large_image",
+})
+
 useHead({
-    title: "RestoAdmin — Карта столов",
+    title: `Resto | ${slug}`,
+    titleTemplate: (title) => `${title} | Карта зала`,
+    link: [{ rel: "icon", type: "image/x-icon", href: "/logo.ico" }],
 })
 
 definePageMeta({
