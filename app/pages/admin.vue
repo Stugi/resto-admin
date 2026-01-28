@@ -12,6 +12,7 @@ const routes: NavigationItem[] = [
 
 definePageMeta({
     layout: "default",
+    middleware: ["admin"],
 })
 </script>
 

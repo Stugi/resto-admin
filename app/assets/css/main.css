@@ -193,3 +193,28 @@ body {
         }
     }
 }
+
+/* Переходы для СТРАНИЦ */
+.page-enter-active,
+.page-leave-active {
+    transition: all 0.2s;
+}
+.page-enter-from {
+    opacity: 0;
+    transform: translateY(5px);
+}
+.page-leave-to {
+    opacity: 0;
+    transform: translateY(-5px);
+}
+
+/* Переходы для ЛЕЙАУТОВ */
+.layout-enter-active,
+.layout-leave-active {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.layout-enter-from,
+.layout-leave-to {
+    filter: blur(10px); /* Красивый эффект размытия при смене каркаса */
+    opacity: 0;
+}
