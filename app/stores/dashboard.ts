@@ -5,6 +5,16 @@ import { format } from "date-fns"
 // Типы
 export type LoadLevel = 'low' | 'medium' | 'high' | 'peak'
 
+/**
+ * 🎓 Фильтры для списка столов
+ * 'all' — все столы
+ * 'free' — свободные
+ * 'reserved' — забронированные
+ * 'busy' — занятые
+ * 'soon' — скоро освободятся (менее 30 минут до конца брони)
+ */
+export type TableFilter = 'all' | 'free' | 'reserved' | 'busy' | 'soon'
+
 export interface HourlyLoad {
     hour: number
     load: number // 0-100
@@ -35,6 +45,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     // UI state
     const activeZoneId = ref<string | null>(null)
     const selectedTableId = ref<string | null>(null)
+    const tableFilter = ref<TableFilter>('all')
 
     // --- HELPERS ---
     function getCurrentTimeValue(): number {
@@ -111,6 +122,46 @@ export const useDashboardStore = defineStore('dashboard', () => {
         allTables.value.find(t => t.id === selectedTableId.value)
     )
 
+    /**
+     * 🎓 Отфильтрованные столы текущей зоны
+     *
+     * computed автоматически пересчитывается при изменении:
+     * - currentZone (смена зоны)
+     * - tableFilter (смена фильтра)
+     * - viewTimeValue (смена времени для 'soon')
+     */
+    const filteredTables = computed(() => {
+        const zoneTables = currentZone.value?.tables || []
+
+        if (tableFilter.value === 'all') {
+            return zoneTables
+        }
+
+        if (tableFilter.value === 'soon') {
+            // "Скоро освободится" — бронь заканчивается в течение 30 минут
+            const now = new Date()
+            now.setHours(Math.floor(viewTimeValue.value), Math.round((viewTimeValue.value % 1) * 60))
+            const soonThreshold = new Date(now.getTime() + 30 * 60 * 1000) // +30 минут
+
+            return zoneTables.filter(table => {
+                if (table.status !== 'busy') return false
+
+                // Ищем активную бронь для этого стола
+                const activeReservation = reservations.value.find(res =>
+                    res.tableId === table.id &&
+                    new Date(res.startTime) <= now &&
+                    new Date(res.endTime) > now &&
+                    new Date(res.endTime) <= soonThreshold
+                )
+
+                return !!activeReservation
+            })
+        }
+
+        // Фильтр по статусу: free, reserved, busy
+        return zoneTables.filter(table => table.status === tableFilter.value)
+    })
+
     // --- ACTIONS ---
     function setViewTime(val: number) {
         viewTimeValue.value = val
@@ -126,6 +177,10 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
     function setActiveZone(zoneId: string | null) {
         activeZoneId.value = zoneId
+    }
+
+    function setTableFilter(filter: TableFilter) {
+        tableFilter.value = filter
     }
 
     // Загрузка данных с сервера
@@ -194,6 +249,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
         reservations.value = []
         activeZoneId.value = null
         selectedTableId.value = null
+        tableFilter.value = 'all'
         error.value = null
         viewTimeValue.value = getCurrentTimeValue()
     }
@@ -208,6 +264,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
         error,
         activeZoneId,
         selectedTableId,
+        tableFilter,
 
         // Getters
         viewTime,
@@ -216,12 +273,14 @@ export const useDashboardStore = defineStore('dashboard', () => {
         hourlyLoad,
         currentZone,
         selectedTable,
+        filteredTables,
 
         // Actions
         setViewTime,
         setRestaurant,
         selectTable,
         setActiveZone,
+        setTableFilter,
         fetchData,
         refreshTableStatuses,
         $reset,

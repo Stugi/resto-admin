@@ -1,19 +1,32 @@
 <script setup lang="ts">
+/**
+ * 🎓 NUXT + TS — Страница дашборда ресторана
+ *
+ * Ключевые концепции:
+ * 1. Pinia Store — централизованное хранилище состояния
+ * 2. Composables — переиспользуемая логика (useDashboardDate, useToast)
+ * 3. Route params — динамические параметры из URL ([slug])
+ * 4. watch() — реактивное отслеживание изменений
+ * 5. await в <script setup> — SSR-совместимая загрузка данных
+ */
+
 const store = useDashboardStore()
 const { selectedDate } = useDashboardDate()
 const { showToast } = useToast()
 const route = useRoute()
 
-// Ref & Computed
+// 🎓 route.params типизируется автоматически благодаря имени файла [slug].vue
+// `as string` нужен потому что params может быть string | string[]
 const slug = route.params.slug as string
 
 // Инициализируем store с текущим рестораном
 store.setRestaurant({ slug, name: slug })
 
-// Загружаем данные при монтировании
+// 🎓 await в <script setup> работает благодаря Nuxt Suspense
+// Данные загружаются на сервере (SSR) перед рендерингом
 await store.fetchData(selectedDate.value)
 
-// Если зоны не загрузились — 404
+// 🎓 createError — Nuxt хелпер для 404/500 страниц
 if (store.error || !store.zones.length) {
     throw createError({
         statusCode: 404,
@@ -21,21 +34,33 @@ if (store.error || !store.zones.length) {
     })
 }
 
-// Methods
+// ============ METHODS ============
+
+// 🎓 Типизация параметра: tableId может быть string или null
 const handleSelectTable = (tableId: string | null) => {
     store.selectTable(tableId)
 }
 
+// 🎓 Смена зоны — сбрасываем выбранный стол
+const handleZoneChange = (zoneId: string) => {
+    store.selectTable(null) // Сбрасываем выбор при смене зоны
+    store.setActiveZone(zoneId)
+}
+
+// 🎓 async функция — после успеха обновляем данные
 const handleSuccess = async () => {
     store.selectTable(null)
     await store.fetchData(selectedDate.value)
     showToast("Бронирование создано!", "success")
 }
 
-// При смене даты — перезагружаем данные
+// ============ WATCHERS ============
+
+// 🎓 watch() — реактивно следит за изменением selectedDate
+// При смене даты в header — перезагружаем данные
 watch(selectedDate, async (newDate) => {
     await store.fetchData(newDate)
-}, { immediate: false })
+}, { immediate: false }) // immediate: false — не запускать при монтировании
 
 // SEO
 useSeoMeta({
@@ -61,27 +86,45 @@ definePageMeta({
     <div class="flex flex-col h-full">
         <TimeSlider />
         <div class="flex h-full overflow-hidden">
-            <!-- 1. ЛЕВАЯ ПАНЕЛЬ -->
+            <!-- 1. ЛЕВАЯ ПАНЕЛЬ — Новый сайдбар со списком столов -->
             <aside class="w-sidebar border-r border-white-5 flex flex-col shrink-0 bg-bg">
-                <div class="p-6 space-y-8 overflow-y-auto scrollbar-thin">
-                    <!-- Блок статистики -->
-                    <section class="space-y-4">
-                        <p class="text-2xs uppercase tracking-widest text-muted font-bold">
-                            Брони на сегодня
-                        </p>
-                        <div class="text-3xl font-bold italic">
-                            {{ store.reservations.length }}
-                            <span class="text-sm text-success font-medium not-italic ml-2"
-                                >↑ 15%</span
-                            >
-                        </div>
-                    </section>
-                    <ReservationSidebarList :reservations="store.reservations" />
-                </div>
+                <DashboardSidebar />
             </aside>
 
             <!-- 2. ЦЕНТРАЛЬНАЯ ЧАСТЬ -->
             <main class="flex-1 flex flex-col min-w-0">
+                <!-- Header с табами зон -->
+                <div class="flex items-center justify-between px-6 py-4 border-b border-white-5 bg-bg">
+                    <!--
+                        🎓 Передаём props в компонент:
+                        - :zones — реактивная привязка массива зон из store
+                        - :active-zone-id — kebab-case в template = camelCase в props
+                        - @change — слушаем событие 'change' от компонента
+                    -->
+                    <ZoneTabs
+                        :zones="store.zones"
+                        :active-zone-id="store.activeZoneId"
+                        @change="handleZoneChange"
+                    />
+
+                    <!-- Кнопки управления видом (как в прототипе) -->
+                    <div class="flex gap-2">
+                        <button
+                            class="w-9 h-9 rounded-lg border border-white-5 bg-surface flex items-center justify-center text-muted hover:border-brand hover:text-brand transition-colors"
+                            title="Схема"
+                        >
+                            <Icon name="lucide:layout-grid" class="w-4 h-4" />
+                        </button>
+                        <button
+                            class="w-9 h-9 rounded-lg border border-white-5 bg-surface flex items-center justify-center text-muted hover:border-brand hover:text-brand transition-colors"
+                            title="3D"
+                        >
+                            <Icon name="lucide:box" class="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Карта столов -->
                 <div class="flex-1 overflow-y-auto p-safe scrollbar-thin">
                     <div class="space-y-8">
                         <!-- Индикатор загрузки -->

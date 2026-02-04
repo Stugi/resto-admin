@@ -136,3 +136,7 @@ model Reservation {
 
   @@map("reservations")
 }
+
+// TODO: Worker статистики — отложено на потом
+// model WorkerConfig { ... }
+// model DailyStats { ... }

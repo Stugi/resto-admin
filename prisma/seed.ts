@@ -65,8 +65,10 @@ async function main() {
         data: { name: 'Терраса', restaurantId: restaurant.id }
     })
 
-    // 6. Создаем столы для Основного зала (согласно макету)
-    const tablesData = [
+    // 6. Создаем столы для всех зон
+
+    // Основной зал (18 столов)
+    const mainTablesData = [
         { name: '1', cap: 2 }, { name: '2', cap: 2 }, { name: '3', cap: 4 },
         { name: '4', cap: 4 }, { name: '5', cap: 4 }, { name: '6', cap: 4 },
         { name: '7', cap: 2 }, { name: '8', cap: 6 }, { name: '9', cap: 6 },
@@ -75,8 +77,25 @@ async function main() {
         { name: '16', cap: 2 }, { name: '17', cap: 2 }, { name: '18', cap: 4 },
     ]
 
+    // 2 этаж (8 столов) — VIP зона
+    const floor2TablesData = [
+        { name: 'VIP-1', cap: 6 }, { name: 'VIP-2', cap: 6 },
+        { name: 'VIP-3', cap: 8 }, { name: 'VIP-4', cap: 8 },
+        { name: '21', cap: 4 }, { name: '22', cap: 4 },
+        { name: '23', cap: 2 }, { name: '24', cap: 2 },
+    ]
+
+    // Терраса (6 столов)
+    const terraceTablesData = [
+        { name: 'Т-1', cap: 2 }, { name: 'Т-2', cap: 2 },
+        { name: 'Т-3', cap: 4 }, { name: 'Т-4', cap: 4 },
+        { name: 'Т-5', cap: 6 }, { name: 'Т-6', cap: 6 },
+    ]
+
     const tables: { id: string; name: string; capacity: number }[] = []
-    for (const t of tablesData) {
+
+    // Создаём столы для основного зала
+    for (const t of mainTablesData) {
         const table = await prisma.table.create({
             data: {
                 name: t.name,
@@ -88,7 +107,32 @@ async function main() {
         tables.push(table)
     }
 
-    console.log(`📋 Создано ${tables.length} столов`)
+    // Создаём столы для 2 этажа
+    for (const t of floor2TablesData) {
+        await prisma.table.create({
+            data: {
+                name: t.name,
+                capacity: t.cap,
+                zoneId: zone2.id,
+                createdBy: user.login
+            }
+        })
+    }
+
+    // Создаём столы для террасы
+    for (const t of terraceTablesData) {
+        await prisma.table.create({
+            data: {
+                name: t.name,
+                capacity: t.cap,
+                zoneId: zoneTerrace.id,
+                createdBy: user.login
+            }
+        })
+    }
+
+    const totalTables = mainTablesData.length + floor2TablesData.length + terraceTablesData.length
+    console.log(`📋 Создано ${totalTables} столов (${mainTablesData.length} осн. + ${floor2TablesData.length} 2эт. + ${terraceTablesData.length} терр.)`)
 
     // 7. Создаем гостей
     const guestsData = [
