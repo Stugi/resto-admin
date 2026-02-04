@@ -9,7 +9,7 @@ export default defineNuxtConfig({
     layoutTransition: { name: 'layout', mode: 'out-in' }
   },
 
-  modules: ['@nuxt/icon', '@nuxt/fonts'],
+  modules: ['@nuxt/icon', '@nuxt/fonts', '@pinia/nuxt'],
 
   components: [
     {
