@@ -54,42 +54,109 @@ async function main() {
         }
     })
 
-    // 5. Создаем зоны как на табах в макете
+    // 5. Создаем зоны с декоративными элементами
+
+    // Декор для основного зала
+    const mainZoneElements = [
+        { id: 'kitchen-1', type: 'kitchen', label: 'Кухня', posX: 8, posY: 8, width: 100, height: 60 },
+        { id: 'bar-1', type: 'bar', label: 'Бар', posX: 92, posY: 8, width: 120, height: 50 },
+        { id: 'entrance-1', type: 'entrance', label: 'Вход', posX: 50, posY: 95 },
+        { id: 'hostess-1', type: 'hostess', label: 'Хостес', posX: 50, posY: 88 },
+        { id: 'plant-1', type: 'plants', posX: 5, posY: 50 },
+        { id: 'plant-2', type: 'plants', posX: 95, posY: 50 },
+        { id: 'window-1', type: 'window', posX: 5, posY: 70, width: 80, height: 10 },
+        { id: 'window-2', type: 'window', posX: 95, posY: 70, width: 80, height: 10 },
+        { id: 'toilet-1', type: 'toilet', label: 'WC', posX: 92, posY: 92 },
+    ]
+
+    // Декор для 2 этажа
+    const floor2Elements = [
+        { id: 'vip-zone-1', type: 'vip_zone', label: 'VIP', posX: 30, posY: 35, width: 200, height: 150 },
+        { id: 'plant-3', type: 'plants', posX: 5, posY: 15 },
+        { id: 'plant-4', type: 'plants', posX: 95, posY: 15 },
+        { id: 'window-3', type: 'window', posX: 50, posY: 5, width: 200, height: 12 },
+        { id: 'toilet-2', type: 'toilet', label: 'WC', posX: 92, posY: 92 },
+    ]
+
+    // Декор для террасы
+    const terraceElements = [
+        { id: 'entrance-t', type: 'entrance', label: 'Выход', posX: 50, posY: 5 },
+        { id: 'plant-t1', type: 'plants', posX: 10, posY: 50 },
+        { id: 'plant-t2', type: 'plants', posX: 90, posY: 50 },
+        { id: 'plant-t3', type: 'plants', posX: 30, posY: 90 },
+        { id: 'plant-t4', type: 'plants', posX: 70, posY: 90 },
+    ]
+
     const zoneMain = await prisma.zone.create({
-        data: { name: 'Основной зал', restaurantId: restaurant.id }
+        data: {
+            name: 'Основной зал',
+            restaurantId: restaurant.id,
+            elements: mainZoneElements
+        }
     })
     const zone2 = await prisma.zone.create({
-        data: { name: '2 этаж', restaurantId: restaurant.id }
+        data: {
+            name: '2 этаж',
+            restaurantId: restaurant.id,
+            elements: floor2Elements
+        }
     })
     const zoneTerrace = await prisma.zone.create({
-        data: { name: 'Терраса', restaurantId: restaurant.id }
+        data: {
+            name: 'Терраса',
+            restaurantId: restaurant.id,
+            elements: terraceElements
+        }
     })
 
     // 6. Создаем столы для всех зон
 
-    // Основной зал (18 столов)
+    // Основной зал (18 столов) — с позициями на схеме (15-85% чтобы не обрезались)
     const mainTablesData = [
-        { name: '1', cap: 2 }, { name: '2', cap: 2 }, { name: '3', cap: 4 },
-        { name: '4', cap: 4 }, { name: '5', cap: 4 }, { name: '6', cap: 4 },
-        { name: '7', cap: 2 }, { name: '8', cap: 6 }, { name: '9', cap: 6 },
-        { name: '10', cap: 4 }, { name: '11', cap: 4 }, { name: '12', cap: 2 },
-        { name: '13', cap: 8 }, { name: '14', cap: 4 }, { name: '15', cap: 2 },
-        { name: '16', cap: 2 }, { name: '17', cap: 2 }, { name: '18', cap: 4 },
+        // Ряд 1 (верх)
+        { name: '1', cap: 2, posX: 15, posY: 15 },
+        { name: '2', cap: 2, posX: 30, posY: 15 },
+        { name: '3', cap: 4, posX: 45, posY: 15 },
+        { name: '4', cap: 4, posX: 60, posY: 15 },
+        { name: '5', cap: 4, posX: 75, posY: 15 },
+        { name: '6', cap: 4, posX: 88, posY: 15 },
+        // Ряд 2 (центр-верх)
+        { name: '7', cap: 2, posX: 15, posY: 38 },
+        { name: '8', cap: 6, posX: 35, posY: 38 },
+        { name: '9', cap: 6, posX: 60, posY: 38 },
+        { name: '10', cap: 4, posX: 82, posY: 38 },
+        // Ряд 3 (центр-низ)
+        { name: '11', cap: 4, posX: 15, posY: 60 },
+        { name: '12', cap: 2, posX: 30, posY: 60 },
+        { name: '13', cap: 8, posX: 50, posY: 60 }, // Большой стол
+        { name: '14', cap: 4, posX: 75, posY: 60 },
+        // Ряд 4 (низ)
+        { name: '15', cap: 2, posX: 20, posY: 82 },
+        { name: '16', cap: 2, posX: 38, posY: 82 },
+        { name: '17', cap: 2, posX: 55, posY: 82 },
+        { name: '18', cap: 4, posX: 72, posY: 82 },
     ]
 
     // 2 этаж (8 столов) — VIP зона
     const floor2TablesData = [
-        { name: 'VIP-1', cap: 6 }, { name: 'VIP-2', cap: 6 },
-        { name: 'VIP-3', cap: 8 }, { name: 'VIP-4', cap: 8 },
-        { name: '21', cap: 4 }, { name: '22', cap: 4 },
-        { name: '23', cap: 2 }, { name: '24', cap: 2 },
+        { name: 'VIP-1', cap: 6, posX: 15, posY: 20 },
+        { name: 'VIP-2', cap: 6, posX: 45, posY: 20 },
+        { name: 'VIP-3', cap: 8, posX: 75, posY: 20 },
+        { name: 'VIP-4', cap: 8, posX: 45, posY: 55 },
+        { name: '21', cap: 4, posX: 15, posY: 75 },
+        { name: '22', cap: 4, posX: 35, posY: 75 },
+        { name: '23', cap: 2, posX: 55, posY: 75 },
+        { name: '24', cap: 2, posX: 75, posY: 75 },
     ]
 
     // Терраса (6 столов)
     const terraceTablesData = [
-        { name: 'Т-1', cap: 2 }, { name: 'Т-2', cap: 2 },
-        { name: 'Т-3', cap: 4 }, { name: 'Т-4', cap: 4 },
-        { name: 'Т-5', cap: 6 }, { name: 'Т-6', cap: 6 },
+        { name: 'Т-1', cap: 2, posX: 10, posY: 25 },
+        { name: 'Т-2', cap: 2, posX: 30, posY: 25 },
+        { name: 'Т-3', cap: 4, posX: 50, posY: 25 },
+        { name: 'Т-4', cap: 4, posX: 70, posY: 25 },
+        { name: 'Т-5', cap: 6, posX: 25, posY: 65 },
+        { name: 'Т-6', cap: 6, posX: 55, posY: 65 },
     ]
 
     const tables: { id: string; name: string; capacity: number }[] = []
@@ -101,6 +168,8 @@ async function main() {
                 name: t.name,
                 capacity: t.cap,
                 zoneId: zoneMain.id,
+                posX: t.posX,
+                posY: t.posY,
                 createdBy: user.login
             }
         })
@@ -114,6 +183,8 @@ async function main() {
                 name: t.name,
                 capacity: t.cap,
                 zoneId: zone2.id,
+                posX: t.posX,
+                posY: t.posY,
                 createdBy: user.login
             }
         })
@@ -126,6 +197,8 @@ async function main() {
                 name: t.name,
                 capacity: t.cap,
                 zoneId: zoneTerrace.id,
+                posX: t.posX,
+                posY: t.posY,
                 createdBy: user.login
             }
         })

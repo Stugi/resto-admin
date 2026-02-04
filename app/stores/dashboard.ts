@@ -15,6 +15,13 @@ export type LoadLevel = 'low' | 'medium' | 'high' | 'peak'
  */
 export type TableFilter = 'all' | 'free' | 'reserved' | 'busy' | 'soon'
 
+/**
+ * 🎓 Режимы отображения карты зала
+ * 'grid' — карточки столов (текущий)
+ * 'schema' — схема зала с расстановкой
+ */
+export type ViewMode = 'grid' | 'schema'
+
 export interface HourlyLoad {
     hour: number
     load: number // 0-100
@@ -46,6 +53,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     const activeZoneId = ref<string | null>(null)
     const selectedTableId = ref<string | null>(null)
     const tableFilter = ref<TableFilter>('all')
+    const viewMode = ref<ViewMode>('grid')
 
     // --- HELPERS ---
     function getCurrentTimeValue(): number {
@@ -183,6 +191,10 @@ export const useDashboardStore = defineStore('dashboard', () => {
         tableFilter.value = filter
     }
 
+    function setViewMode(mode: ViewMode) {
+        viewMode.value = mode
+    }
+
     // Загрузка данных с сервера
     async function fetchData(date: Date) {
         if (!currentRestaurant.value?.slug) return
@@ -250,6 +262,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
         activeZoneId.value = null
         selectedTableId.value = null
         tableFilter.value = 'all'
+        viewMode.value = 'grid'
         error.value = null
         viewTimeValue.value = getCurrentTimeValue()
     }
@@ -265,6 +278,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
         activeZoneId,
         selectedTableId,
         tableFilter,
+        viewMode,
 
         // Getters
         viewTime,
@@ -281,6 +295,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
         selectTable,
         setActiveZone,
         setTableFilter,
+        setViewMode,
         fetchData,
         refreshTableStatuses,
         $reset,

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { ZoneElement } from '~~/types'
+
 /**
  * 🎓 NUXT + TS — Страница дашборда ресторана
  *
@@ -13,11 +15,15 @@
 const store = useDashboardStore()
 const { selectedDate } = useDashboardDate()
 const { showToast } = useToast()
-const route = useRoute()
 
-// 🎓 route.params типизируется автоматически благодаря имени файла [slug].vue
-// `as string` нужен потому что params может быть string | string[]
-const slug = route.params.slug as string
+/**
+ * 🎓 Типизированный роут благодаря experimental.typedPages
+ *
+ * useRoute('dashboard-slug') возвращает роут с типизированными params
+ * route.params.slug уже string, не нужен `as string`
+ */
+const route = useRoute('dashboard-slug')
+const slug = route.params.slug
 
 // Инициализируем store с текущим рестораном
 store.setRestaurant({ slug, name: slug })
@@ -107,38 +113,51 @@ definePageMeta({
                         @change="handleZoneChange"
                     />
 
-                    <!-- Кнопки управления видом (как в прототипе) -->
-                    <div class="flex gap-2">
+                    <!-- Кнопки управления видом -->
+                    <div class="flex gap-1 p-1 bg-surface rounded-lg border border-white-5">
                         <button
-                            class="w-9 h-9 rounded-lg border border-white-5 bg-surface flex items-center justify-center text-muted hover:border-brand hover:text-brand transition-colors"
-                            title="Схема"
+                            class="view-btn"
+                            :class="{ 'is-active': store.viewMode === 'grid' }"
+                            title="Карточки"
+                            @click="store.setViewMode('grid')"
                         >
                             <Icon name="lucide:layout-grid" class="w-4 h-4" />
                         </button>
                         <button
-                            class="w-9 h-9 rounded-lg border border-white-5 bg-surface flex items-center justify-center text-muted hover:border-brand hover:text-brand transition-colors"
-                            title="3D"
+                            class="view-btn"
+                            :class="{ 'is-active': store.viewMode === 'schema' }"
+                            title="Схема зала"
+                            @click="store.setViewMode('schema')"
                         >
-                            <Icon name="lucide:box" class="w-4 h-4" />
+                            <Icon name="lucide:map" class="w-4 h-4" />
                         </button>
                     </div>
                 </div>
 
                 <!-- Карта столов -->
-                <div class="flex-1 overflow-y-auto p-safe scrollbar-thin">
-                    <div class="space-y-8">
-                        <!-- Индикатор загрузки -->
-                        <div v-if="store.isLoading" class="flex items-center justify-center py-20">
-                            <div class="animate-spin w-8 h-8 border-2 border-brand border-t-transparent rounded-full"></div>
-                        </div>
-                        <!-- TableMap -->
+                <div class="flex-1 overflow-hidden p-safe">
+                    <!-- Индикатор загрузки -->
+                    <div v-if="store.isLoading" class="flex items-center justify-center h-full">
+                        <div class="animate-spin w-8 h-8 border-2 border-brand border-t-transparent rounded-full"></div>
+                    </div>
+
+                    <!-- Grid вид (карточки) -->
+                    <div v-else-if="store.viewMode === 'grid'" class="h-full overflow-y-auto scrollbar-thin">
                         <TableMap
-                            v-else
                             :tables="store.currentZone?.tables || []"
                             :selected-table-id="store.selectedTableId"
                             @selectTable="handleSelectTable"
                         />
                     </div>
+
+                    <!-- Schema вид (схема зала) -->
+                    <FloorSchema
+                        v-else
+                        :tables="store.currentZone?.tables || []"
+                        :elements="(store.currentZone?.elements as ZoneElement[]) || []"
+                        :selected-table-id="store.selectedTableId"
+                        @selectTable="handleSelectTable"
+                    />
                 </div>
             </main>
 
@@ -176,3 +195,26 @@ definePageMeta({
         </div>
     </div>
 </template>
+
+<style scoped>
+.view-btn {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    color: var(--color-muted);
+    transition: all var(--duration-fast) var(--ease-out);
+}
+
+.view-btn:hover {
+    color: white;
+    background: var(--color-white-5);
+}
+
+.view-btn.is-active {
+    color: var(--color-bg);
+    background: var(--color-brand);
+}
+</style>
