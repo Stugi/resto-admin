@@ -9,7 +9,7 @@
 
 export const TABLE_STATUSES = [
     { key: 'free', label: 'Свободен', color: 'bg-success' },
-    { key: 'reserved', label: 'Бронь', color: 'bg-brand' },
+    { key: 'reserved', label: 'Бронь', color: 'bg-yellow-500' },
     { key: 'busy', label: 'Занят', color: 'bg-danger' },
     { key: 'soon', label: 'Скоро освободится', color: 'bg-violet-500' },
 ] as const
