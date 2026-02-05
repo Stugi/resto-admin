@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import type { ReservationWithDetails } from '~~/types'
+
 interface Props {
-    reservations: any[] | null // TODO
-    // В будущем тут будет строгий тип из ~~/types
+    reservations: ReservationWithDetails[] | null
 }
 
 defineProps<Props>()

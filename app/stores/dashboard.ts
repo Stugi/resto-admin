@@ -1,4 +1,4 @@
-import type { RestaurantLink, ZoneWithTables, TableWithStatus } from "~~/types"
+import type { RestaurantLink, ZoneWithTables, TableWithStatus, ReservationWithDetails } from "~~/types"
 import type { Reservation, Guest } from "@prisma/client"
 import { format } from "date-fns"
 
@@ -21,6 +21,13 @@ export type TableFilter = 'all' | 'free' | 'reserved' | 'busy' | 'soon'
  * 'schema' — схема зала с расстановкой
  */
 export type ViewMode = 'grid' | 'schema'
+
+/**
+ * 🎓 Вкладки правого сайдбара
+ * 'booking' — форма бронирования
+ * 'list' — список всех броней дня
+ */
+export type RightSidebarTab = 'booking' | 'list'
 
 export interface HourlyLoad {
     hour: number
@@ -45,7 +52,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
     // Данные с сервера
     const zones = ref<ZoneWithTables[]>([])
-    const reservations = ref<ReservationWithGuest[]>([])
+    const reservations = ref<ReservationWithDetails[]>([])
     const isLoading = ref(false)
     const error = ref<string | null>(null)
 
@@ -54,6 +61,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     const selectedTableId = ref<string | null>(null)
     const tableFilter = ref<TableFilter>('all')
     const viewMode = ref<ViewMode>('grid')
+    const rightSidebarTab = ref<RightSidebarTab>('booking')
 
     // --- HELPERS ---
     function getCurrentTimeValue(): number {
@@ -195,6 +203,10 @@ export const useDashboardStore = defineStore('dashboard', () => {
         viewMode.value = mode
     }
 
+    function setRightSidebarTab(tab: RightSidebarTab) {
+        rightSidebarTab.value = tab
+    }
+
     // Загрузка данных с сервера
     async function fetchData(date: Date) {
         if (!currentRestaurant.value?.slug) return
@@ -213,7 +225,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
                         viewTime: viewTime.value
                     }
                 }),
-                $fetch<ReservationWithGuest[]>('/api/reservations', {
+                $fetch<ReservationWithDetails[]>('/api/reservations', {
                     query: {
                         date: dateStr,
                         restaurantSlug: currentRestaurant.value.slug
@@ -263,6 +275,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
         selectedTableId.value = null
         tableFilter.value = 'all'
         viewMode.value = 'grid'
+        rightSidebarTab.value = 'booking'
         error.value = null
         viewTimeValue.value = getCurrentTimeValue()
     }
@@ -279,6 +292,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
         selectedTableId,
         tableFilter,
         viewMode,
+        rightSidebarTab,
 
         // Getters
         viewTime,
@@ -296,6 +310,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
         setActiveZone,
         setTableFilter,
         setViewMode,
+        setRightSidebarTab,
         fetchData,
         refreshTableStatuses,
         $reset,

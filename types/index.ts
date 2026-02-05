@@ -1,4 +1,4 @@
-import type { Table, Zone, Reservation, User, Restaurant } from '@prisma/client'
+import type { Table, Zone, Reservation, Guest, User, Restaurant } from '@prisma/client'
 
 // ============ ЭЛЕМЕНТЫ СХЕМЫ ЗАЛА ============
 
@@ -44,7 +44,7 @@ export type TableStatus = 'free' | 'busy' | 'reserved'
 // Расширяем стандартный тип стола из Prisma
 export interface TableWithStatus extends Table {
     status: TableStatus
-    reservations?: Reservation[] // если нужно на фронте
+    reservations?: (Reservation & { guest: Guest })[]
 }
 
 // Расширяем тип зоны
@@ -53,6 +53,12 @@ export interface ZoneWithTables extends Zone {
     elements?: ZoneElement[]  // Декоративные элементы схемы
 }
 
+
+// Резервация с вложенными guest и table (ответ /api/reservations)
+export type ReservationWithDetails = Reservation & {
+    guest: Guest
+    table: Pick<Table, 'id' | 'name'>
+}
 
 export type RestaurantLink = Pick<Restaurant, 'slug' | 'name'>
 

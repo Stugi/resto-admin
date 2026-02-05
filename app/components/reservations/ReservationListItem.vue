@@ -1,8 +1,9 @@
-<!-- app/components/ReservationListItem.vue -->
+<!-- app/components/reservations/ReservationListItem.vue -->
 <script setup lang="ts">
-// В идеале тут должен быть расширенный тип из types/index.ts
+import type { ReservationWithDetails } from '~~/types'
+
 const props = defineProps<{
-    reservation: any //TODO
+    reservation: ReservationWithDetails
 }>()
 
 // Форматируем время "19:30"

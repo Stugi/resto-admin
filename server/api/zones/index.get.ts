@@ -35,7 +35,8 @@ export default defineEventHandler(async (event): Promise<ZoneWithTables[]> => {
                             status: { in: ['confirmed', 'seated'] },
                             startTime: { gte: start, lte: end },
                         },
-                        orderBy: { startTime: 'asc' }
+                        orderBy: { startTime: 'asc' },
+                        include: { guest: true }
                     }
                 }
             }

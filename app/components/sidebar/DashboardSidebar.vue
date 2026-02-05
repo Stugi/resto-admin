@@ -39,9 +39,9 @@
 .dashboard-sidebar {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: var(--spacing-4);
     height: 100%;
-    padding: 20px;
+    padding: var(--spacing-4);
     overflow: hidden;
 }
 
