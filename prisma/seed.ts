@@ -240,42 +240,100 @@ async function main() {
     const dayAfter = addDays(today, 2)
 
     const reservationsData = [
-        // СЕГОДНЯ - утро/день
+        // ═══════════ СЕГОДНЯ ═══════════
+
+        // 12:00–14:00 — лёгкий обед (3 стола → low)
         { tableIdx: 0, guestIdx: 0, start: 12, end: 14, people: 2, status: 'confirmed', date: today },
-        { tableIdx: 2, guestIdx: 1, start: 13, end: 15, people: 3, status: 'confirmed', date: today },
+        { tableIdx: 1, guestIdx: 1, start: 12, end: 14, people: 2, status: 'confirmed', date: today },
+        { tableIdx: 2, guestIdx: 2, start: 12, end: 13.5, people: 3, status: 'confirmed', date: today },
 
-        // СЕГОДНЯ - обед
-        { tableIdx: 4, guestIdx: 2, start: 14, end: 16, people: 4, status: 'confirmed', date: today },
-        { tableIdx: 6, guestIdx: 3, start: 15, end: 17, people: 2, status: 'confirmed', date: today },
+        // 13:00–15:00 — обед набирает (5 столов → medium)
+        { tableIdx: 3, guestIdx: 3, start: 13, end: 15, people: 4, status: 'confirmed', date: today },
+        { tableIdx: 4, guestIdx: 4, start: 13, end: 15, people: 4, status: 'confirmed', date: today },
+        { tableIdx: 5, guestIdx: 5, start: 13, end: 14.5, people: 3, status: 'confirmed', date: today },
 
-        // СЕГОДНЯ - вечер (пиковое время 18-21)
-        { tableIdx: 1, guestIdx: 4, start: 18, end: 20, people: 2, status: 'seated', date: today },
-        { tableIdx: 3, guestIdx: 5, start: 18, end: 20, people: 4, status: 'seated', date: today },
-        { tableIdx: 5, guestIdx: 6, start: 19, end: 21, people: 4, status: 'confirmed', date: today },
-        { tableIdx: 7, guestIdx: 7, start: 19, end: 22, people: 5, status: 'confirmed', date: today },
-        { tableIdx: 8, guestIdx: 8, start: 18, end: 20, people: 6, status: 'seated', date: today },
-        { tableIdx: 9, guestIdx: 9, start: 19, end: 21, people: 4, status: 'seated', date: today },
-        { tableIdx: 12, guestIdx: 6, start: 19, end: 22, people: 6, status: 'seated', date: today }, // VIP стол 13
-        { tableIdx: 14, guestIdx: 10, start: 19, end: 21, people: 2, status: 'seated', date: today },
-        { tableIdx: 17, guestIdx: 11, start: 20, end: 22, people: 3, status: 'confirmed', date: today },
+        // 14:00–16:00 — обеденный пик (7 столов → medium/high)
+        { tableIdx: 6, guestIdx: 6, start: 14, end: 16, people: 2, status: 'confirmed', date: today },
+        { tableIdx: 7, guestIdx: 7, start: 14, end: 16, people: 5, status: 'confirmed', date: today },
+        { tableIdx: 8, guestIdx: 8, start: 14, end: 15.5, people: 6, status: 'confirmed', date: today },
+        { tableIdx: 9, guestIdx: 9, start: 14.5, end: 16, people: 4, status: 'confirmed', date: today },
 
-        // СЕГОДНЯ - поздний вечер
-        { tableIdx: 10, guestIdx: 0, start: 20, end: 22, people: 4, status: 'confirmed', date: today },
-        { tableIdx: 11, guestIdx: 1, start: 21, end: 23, people: 2, status: 'confirmed', date: today },
-        { tableIdx: 13, guestIdx: 2, start: 21, end: 23, people: 4, status: 'confirmed', date: today },
+        // 15:00–17:00 — спад после обеда (4 стола → low/medium)
+        { tableIdx: 10, guestIdx: 10, start: 15, end: 17, people: 3, status: 'confirmed', date: today },
+        { tableIdx: 11, guestIdx: 11, start: 15.5, end: 17, people: 2, status: 'confirmed', date: today },
 
-        // ЗАВТРА
+        // 16:00–18:00 — затишье (2 стола → low)
+        { tableIdx: 12, guestIdx: 0, start: 16, end: 18, people: 4, status: 'confirmed', date: today },
+        { tableIdx: 13, guestIdx: 1, start: 16.5, end: 18, people: 3, status: 'confirmed', date: today },
+
+        // 17:00–19:00 — начало вечера (4 стола → medium)
+        { tableIdx: 14, guestIdx: 2, start: 17, end: 19, people: 2, status: 'confirmed', date: today },
+        { tableIdx: 15, guestIdx: 3, start: 17, end: 19, people: 2, status: 'confirmed', date: today },
+        { tableIdx: 0, guestIdx: 4, start: 17.5, end: 19.5, people: 2, status: 'confirmed', date: today },
+        { tableIdx: 1, guestIdx: 5, start: 17.5, end: 19, people: 2, status: 'confirmed', date: today },
+
+        // 18:00–20:00 — вечерний разгон (8 столов → high)
+        { tableIdx: 2, guestIdx: 6, start: 18, end: 20, people: 3, status: 'seated', date: today },
+        { tableIdx: 3, guestIdx: 7, start: 18, end: 20, people: 4, status: 'seated', date: today },
+        { tableIdx: 4, guestIdx: 8, start: 18, end: 20.5, people: 4, status: 'seated', date: today },
+        { tableIdx: 5, guestIdx: 9, start: 18, end: 20, people: 3, status: 'seated', date: today },
+        { tableIdx: 6, guestIdx: 10, start: 18, end: 19.5, people: 2, status: 'seated', date: today },
+        { tableIdx: 7, guestIdx: 11, start: 18, end: 20, people: 5, status: 'seated', date: today },
+        { tableIdx: 16, guestIdx: 0, start: 18, end: 20, people: 2, status: 'confirmed', date: today },
+        { tableIdx: 17, guestIdx: 1, start: 18, end: 20.5, people: 4, status: 'confirmed', date: today },
+
+        // 19:00–21:00 — ПИК вечера (12 столов → peak!)
+        { tableIdx: 8, guestIdx: 2, start: 19, end: 21, people: 6, status: 'seated', date: today },
+        { tableIdx: 9, guestIdx: 3, start: 19, end: 21, people: 4, status: 'seated', date: today },
+        { tableIdx: 10, guestIdx: 4, start: 19, end: 21, people: 4, status: 'seated', date: today },
+        { tableIdx: 11, guestIdx: 5, start: 19, end: 21.5, people: 2, status: 'seated', date: today },
+        { tableIdx: 12, guestIdx: 6, start: 19, end: 22, people: 6, status: 'seated', date: today },
+        { tableIdx: 13, guestIdx: 7, start: 19, end: 21, people: 4, status: 'confirmed', date: today },
+        { tableIdx: 14, guestIdx: 8, start: 19, end: 21, people: 2, status: 'confirmed', date: today },
+        { tableIdx: 15, guestIdx: 9, start: 19.5, end: 21.5, people: 2, status: 'confirmed', date: today },
+
+        // 20:00–22:00 — ещё пик (7 столов → high)
+        { tableIdx: 0, guestIdx: 10, start: 20, end: 22, people: 2, status: 'confirmed', date: today },
+        { tableIdx: 1, guestIdx: 11, start: 20, end: 22, people: 2, status: 'confirmed', date: today },
+        { tableIdx: 2, guestIdx: 0, start: 20.5, end: 22.5, people: 3, status: 'confirmed', date: today },
+        { tableIdx: 3, guestIdx: 1, start: 20, end: 22, people: 4, status: 'confirmed', date: today },
+        { tableIdx: 16, guestIdx: 2, start: 20.5, end: 22, people: 2, status: 'confirmed', date: today },
+        { tableIdx: 17, guestIdx: 3, start: 20, end: 22, people: 3, status: 'confirmed', date: today },
+
+        // 21:00–23:00 — поздний вечер (5 столов → medium)
+        { tableIdx: 4, guestIdx: 4, start: 21, end: 23, people: 4, status: 'confirmed', date: today },
+        { tableIdx: 5, guestIdx: 5, start: 21, end: 23, people: 3, status: 'confirmed', date: today },
+        { tableIdx: 6, guestIdx: 6, start: 21.5, end: 23, people: 2, status: 'confirmed', date: today },
+        { tableIdx: 7, guestIdx: 7, start: 21, end: 23, people: 5, status: 'confirmed', date: today },
+
+        // 22:00–00:00 — спад (3 стола → low)
+        { tableIdx: 8, guestIdx: 8, start: 22, end: 23.5, people: 4, status: 'confirmed', date: today },
+        { tableIdx: 9, guestIdx: 9, start: 22, end: 23.5, people: 3, status: 'confirmed', date: today },
+        { tableIdx: 10, guestIdx: 10, start: 22.5, end: 23.5, people: 2, status: 'confirmed', date: today },
+
+        // ═══════════ ЗАВТРА ═══════════
         { tableIdx: 0, guestIdx: 3, start: 13, end: 15, people: 2, status: 'confirmed', date: tomorrow },
+        { tableIdx: 1, guestIdx: 4, start: 13, end: 15, people: 2, status: 'confirmed', date: tomorrow },
         { tableIdx: 4, guestIdx: 4, start: 19, end: 21, people: 4, status: 'confirmed', date: tomorrow },
         { tableIdx: 7, guestIdx: 5, start: 19, end: 22, people: 6, status: 'confirmed', date: tomorrow },
         { tableIdx: 12, guestIdx: 6, start: 20, end: 23, people: 8, status: 'confirmed', date: tomorrow },
         { tableIdx: 1, guestIdx: 7, start: 18, end: 20, people: 2, status: 'confirmed', date: tomorrow },
         { tableIdx: 9, guestIdx: 8, start: 19, end: 21, people: 4, status: 'confirmed', date: tomorrow },
+        { tableIdx: 3, guestIdx: 9, start: 18, end: 20, people: 4, status: 'confirmed', date: tomorrow },
+        { tableIdx: 5, guestIdx: 10, start: 18, end: 20, people: 3, status: 'confirmed', date: tomorrow },
+        { tableIdx: 6, guestIdx: 11, start: 19, end: 21, people: 2, status: 'confirmed', date: tomorrow },
+        { tableIdx: 8, guestIdx: 0, start: 19, end: 21, people: 6, status: 'confirmed', date: tomorrow },
+        { tableIdx: 10, guestIdx: 1, start: 20, end: 22, people: 4, status: 'confirmed', date: tomorrow },
+        { tableIdx: 11, guestIdx: 2, start: 20, end: 22, people: 2, status: 'confirmed', date: tomorrow },
+        { tableIdx: 13, guestIdx: 3, start: 21, end: 23, people: 4, status: 'confirmed', date: tomorrow },
 
-        // ПОСЛЕЗАВТРА
+        // ═══════════ ПОСЛЕЗАВТРА ═══════════
         { tableIdx: 2, guestIdx: 9, start: 14, end: 16, people: 3, status: 'confirmed', date: dayAfter },
         { tableIdx: 5, guestIdx: 10, start: 19, end: 21, people: 4, status: 'confirmed', date: dayAfter },
         { tableIdx: 8, guestIdx: 11, start: 20, end: 22, people: 5, status: 'confirmed', date: dayAfter },
+        { tableIdx: 0, guestIdx: 0, start: 18, end: 20, people: 2, status: 'confirmed', date: dayAfter },
+        { tableIdx: 3, guestIdx: 1, start: 19, end: 21, people: 4, status: 'confirmed', date: dayAfter },
+        { tableIdx: 7, guestIdx: 2, start: 19, end: 22, people: 5, status: 'confirmed', date: dayAfter },
     ]
 
     let reservationCount = 0

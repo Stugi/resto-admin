@@ -50,9 +50,6 @@ const tabs = [
                         v-if="store.selectedTable"
                         class="animate-in fade-in slide-in-from-right-4 duration-300"
                     >
-                        <h2 class="text-2xl font-black italic text-brand uppercase tracking-tighter mb-8">
-                            Стол {{ store.selectedTable.name }}
-                        </h2>
                         <BookingForm
                             :table="store.selectedTable"
                             @success="emit('success')"
