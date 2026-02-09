@@ -56,35 +56,61 @@ async function main() {
 
     // 5. Создаем зоны с декоративными элементами
 
-    // Декор для основного зала
+    // Декор для основного зала (по прототипу v2)
     const mainZoneElements = [
-        { id: 'kitchen-1', type: 'kitchen', label: 'Кухня', posX: 8, posY: 8, width: 100, height: 60 },
-        { id: 'bar-1', type: 'bar', label: 'Бар', posX: 92, posY: 8, width: 120, height: 50 },
-        { id: 'entrance-1', type: 'entrance', label: 'Вход', posX: 50, posY: 95 },
-        { id: 'hostess-1', type: 'hostess', label: 'Хостес', posX: 50, posY: 88 },
-        { id: 'plant-1', type: 'plants', posX: 5, posY: 50 },
-        { id: 'plant-2', type: 'plants', posX: 95, posY: 50 },
-        { id: 'window-1', type: 'window', posX: 5, posY: 70, width: 80, height: 10 },
-        { id: 'window-2', type: 'window', posX: 95, posY: 70, width: 80, height: 10 },
-        { id: 'toilet-1', type: 'toilet', label: 'WC', posX: 92, posY: 92 },
+        // Кухня (правый верхний угол, компактная)
+        { id: 'kitchen-1', type: 'kitchen', label: 'Кухня', posX: 93, posY: 5, width: 80, height: 40 },
+        // Бар (правый нижний, компактная стойка)
+        { id: 'bar-1', type: 'bar', label: 'Бар', posX: 90, posY: 88, width: 110, height: 45 },
+        // Вход (снизу, ближе к левому краю)
+        { id: 'entrance-1', type: 'entrance', label: 'Вход', posX: 30, posY: 93 },
+        // Хостес (правее входа)
+        { id: 'hostess-1', type: 'hostess', label: 'Хостес', posX: 42, posY: 93 },
+        // WC (снизу правее центра)
+        { id: 'toilet-1', type: 'toilet', label: 'WC', posX: 55, posY: 93, width: 40, height: 35 },
+        // Панорамное окно (левая стена, тонкая полоса)
+        { id: 'window-1', type: 'window', posX: 1, posY: 45, width: 10, height: 250 },
+        // Колонны (4 штуки — маленькие, незаметные)
+        { id: 'col-1', type: 'column', posX: 22, posY: 30 },
+        { id: 'col-2', type: 'column', posX: 22, posY: 62 },
+        { id: 'col-3', type: 'column', posX: 64, posY: 30 },
+        { id: 'col-4', type: 'column', posX: 64, posY: 62 },
+        // Растения (мелкие акценты)
+        { id: 'plant-1', type: 'plants', posX: 18, posY: 8 },
+        { id: 'plant-2', type: 'plants', posX: 62, posY: 8 },
+        { id: 'plant-3', type: 'plants', posX: 18, posY: 88 },
+        // VIP-зона (оверлей справа сверху, компактнее)
+        { id: 'vip-zone-1', type: 'vip_zone', label: 'VIP', posX: 80, posY: 28, width: 170, height: 160 },
+        // Зона у окна (оверлей слева, шире и покрывает столы 1-4)
+        { id: 'terrace-zone-1', type: 'terrace_zone', label: 'У окна', posX: 8, posY: 45, width: 100, height: 280 },
     ]
 
-    // Декор для 2 этажа
+    // Декор для 2 этажа (камерная зона)
     const floor2Elements = [
-        { id: 'vip-zone-1', type: 'vip_zone', label: 'VIP', posX: 30, posY: 35, width: 200, height: 150 },
-        { id: 'plant-3', type: 'plants', posX: 5, posY: 15 },
-        { id: 'plant-4', type: 'plants', posX: 95, posY: 15 },
-        { id: 'window-3', type: 'window', posX: 50, posY: 5, width: 200, height: 12 },
+        { id: 'vip-zone-2', type: 'vip_zone', label: 'VIP', posX: 50, posY: 35, width: 280, height: 180 },
+        { id: 'window-3', type: 'window', posX: 50, posY: 3, width: 300, height: 14 },
+        { id: 'plant-5', type: 'plants', posX: 8, posY: 10 },
+        { id: 'plant-6', type: 'plants', posX: 92, posY: 10 },
+        { id: 'plant-7', type: 'plants', posX: 8, posY: 85 },
         { id: 'toilet-2', type: 'toilet', label: 'WC', posX: 92, posY: 92 },
+        { id: 'col-5', type: 'column', posX: 30, posY: 55 },
+        { id: 'col-6', type: 'column', posX: 70, posY: 55 },
     ]
 
-    // Декор для террасы
+    // Декор для террасы (открытое пространство)
     const terraceElements = [
-        { id: 'entrance-t', type: 'entrance', label: 'Выход', posX: 50, posY: 5 },
-        { id: 'plant-t1', type: 'plants', posX: 10, posY: 50 },
-        { id: 'plant-t2', type: 'plants', posX: 90, posY: 50 },
-        { id: 'plant-t3', type: 'plants', posX: 30, posY: 90 },
-        { id: 'plant-t4', type: 'plants', posX: 70, posY: 90 },
+        { id: 'entrance-t', type: 'entrance', label: 'Выход в зал', posX: 50, posY: 5 },
+        // Растения по периметру
+        { id: 'plant-t1', type: 'plants', posX: 5, posY: 20 },
+        { id: 'plant-t2', type: 'plants', posX: 95, posY: 20 },
+        { id: 'plant-t3', type: 'plants', posX: 5, posY: 80 },
+        { id: 'plant-t4', type: 'plants', posX: 95, posY: 80 },
+        { id: 'plant-t5', type: 'plants', posX: 30, posY: 92 },
+        { id: 'plant-t6', type: 'plants', posX: 70, posY: 92 },
+        // Ограждение террасы
+        { id: 'wall-t1', type: 'wall_h', posX: 50, posY: 98, width: 300, height: 6 },
+        { id: 'wall-t2', type: 'wall_v', posX: 2, posY: 55, width: 6, height: 250 },
+        { id: 'wall-t3', type: 'wall_v', posX: 98, posY: 55, width: 6, height: 250 },
     ]
 
     const zoneMain = await prisma.zone.create({
@@ -111,52 +137,58 @@ async function main() {
 
     // 6. Создаем столы для всех зон
 
-    // Основной зал (18 столов) — с позициями на схеме (15-85% чтобы не обрезались)
+    // Основной зал (18 столов) — по прототипу v2
     const mainTablesData = [
-        // Ряд 1 (верх)
-        { name: '1', cap: 2, posX: 15, posY: 15 },
-        { name: '2', cap: 2, posX: 30, posY: 15 },
-        { name: '3', cap: 4, posX: 45, posY: 15 },
-        { name: '4', cap: 4, posX: 60, posY: 15 },
-        { name: '5', cap: 4, posX: 75, posY: 15 },
-        { name: '6', cap: 4, posX: 88, posY: 15 },
-        // Ряд 2 (центр-верх)
-        { name: '7', cap: 2, posX: 15, posY: 38 },
-        { name: '8', cap: 6, posX: 35, posY: 38 },
-        { name: '9', cap: 6, posX: 60, posY: 38 },
-        { name: '10', cap: 4, posX: 82, posY: 38 },
-        // Ряд 3 (центр-низ)
-        { name: '11', cap: 4, posX: 15, posY: 60 },
-        { name: '12', cap: 2, posX: 30, posY: 60 },
-        { name: '13', cap: 8, posX: 50, posY: 60 }, // Большой стол
-        { name: '14', cap: 4, posX: 75, posY: 60 },
-        // Ряд 4 (низ)
-        { name: '15', cap: 2, posX: 20, posY: 82 },
-        { name: '16', cap: 2, posX: 38, posY: 82 },
-        { name: '17', cap: 2, posX: 55, posY: 82 },
-        { name: '18', cap: 4, posX: 72, posY: 82 },
+        // У окна (4 стола вдоль левой стены, вертикальный ряд)
+        { name: '1', cap: 2, posX: 9, posY: 20 },
+        { name: '2', cap: 2, posX: 9, posY: 36 },
+        { name: '3', cap: 4, posX: 9, posY: 52 },
+        { name: '4', cap: 4, posX: 9, posY: 68 },
+        // Центр зала — верхний ряд (3 стола)
+        { name: '5', cap: 4, posX: 28, posY: 20 },
+        { name: '6', cap: 4, posX: 42, posY: 20 },
+        { name: '7', cap: 2, posX: 55, posY: 20 },
+        // Центр зала — средний ряд (2 больших стола)
+        { name: '8', cap: 6, posX: 30, posY: 44 },
+        { name: '9', cap: 6, posX: 48, posY: 44 },
+        // Центр зала — нижний ряд (3 стола)
+        { name: '10', cap: 4, posX: 28, posY: 68 },
+        { name: '11', cap: 4, posX: 42, posY: 68 },
+        { name: '12', cap: 2, posX: 55, posY: 68 },
+        // VIP (правый верхний угол, 2 стола)
+        { name: '13', cap: 8, posX: 76, posY: 20 },
+        { name: '14', cap: 4, posX: 80, posY: 42 },
+        // Бар (правая нижняя часть, 4 маленьких столика)
+        { name: '15', cap: 2, posX: 74, posY: 68 },
+        { name: '16', cap: 2, posX: 82, posY: 68 },
+        { name: '17', cap: 2, posX: 90, posY: 68 },
+        { name: '18', cap: 4, posX: 82, posY: 56 },
     ]
 
-    // 2 этаж (8 столов) — VIP зона
+    // 2 этаж (8 столов) — VIP + обычные
     const floor2TablesData = [
-        { name: 'VIP-1', cap: 6, posX: 15, posY: 20 },
-        { name: 'VIP-2', cap: 6, posX: 45, posY: 20 },
-        { name: 'VIP-3', cap: 8, posX: 75, posY: 20 },
-        { name: 'VIP-4', cap: 8, posX: 45, posY: 55 },
-        { name: '21', cap: 4, posX: 15, posY: 75 },
-        { name: '22', cap: 4, posX: 35, posY: 75 },
-        { name: '23', cap: 2, posX: 55, posY: 75 },
-        { name: '24', cap: 2, posX: 75, posY: 75 },
+        // VIP ряд (верхний — 4 больших стола)
+        { name: 'VIP-1', cap: 6, posX: 20, posY: 25 },
+        { name: 'VIP-2', cap: 6, posX: 45, posY: 25 },
+        { name: 'VIP-3', cap: 8, posX: 70, posY: 25 },
+        { name: 'VIP-4', cap: 8, posX: 45, posY: 48 },
+        // Обычные столы (нижний ряд)
+        { name: '21', cap: 4, posX: 20, posY: 75 },
+        { name: '22', cap: 4, posX: 40, posY: 75 },
+        { name: '23', cap: 2, posX: 60, posY: 75 },
+        { name: '24', cap: 2, posX: 80, posY: 75 },
     ]
 
-    // Терраса (6 столов)
+    // Терраса (6 столов) — 2 ряда в открытом пространстве
     const terraceTablesData = [
-        { name: 'Т-1', cap: 2, posX: 10, posY: 25 },
-        { name: 'Т-2', cap: 2, posX: 30, posY: 25 },
-        { name: 'Т-3', cap: 4, posX: 50, posY: 25 },
-        { name: 'Т-4', cap: 4, posX: 70, posY: 25 },
-        { name: 'Т-5', cap: 6, posX: 25, posY: 65 },
-        { name: 'Т-6', cap: 6, posX: 55, posY: 65 },
+        // Верхний ряд (ближе к входу)
+        { name: 'Т-1', cap: 2, posX: 25, posY: 30 },
+        { name: 'Т-2', cap: 2, posX: 50, posY: 30 },
+        { name: 'Т-3', cap: 4, posX: 75, posY: 30 },
+        // Нижний ряд
+        { name: 'Т-4', cap: 4, posX: 25, posY: 62 },
+        { name: 'Т-5', cap: 6, posX: 50, posY: 62 },
+        { name: 'Т-6', cap: 6, posX: 75, posY: 62 },
     ]
 
     const tables: { id: string; name: string; capacity: number }[] = []

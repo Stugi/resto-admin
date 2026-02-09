@@ -1,0 +1,2187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RestoAdmin — Умная админка для бронирования v2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0b;
+            --bg-card: #131315;
+            --bg-elevated: #1a1a1d;
+            --border: #2a2a2d;
+            --border-subtle: #1f1f22;
+            --text-primary: #f5f5f4;
+            --text-secondary: #a1a1a6;
+            --text-muted: #6b6b70;
+            --accent-gold: #d4a853;
+            --accent-gold-dim: #b8923f;
+            --accent-emerald: #34d399;
+            --accent-rose: #fb7185;
+            --accent-amber: #fbbf24;
+            --accent-sky: #38bdf8;
+            --status-available: #22c55e;
+            --status-reserved: #f59e0b;
+            --status-occupied: #ef4444;
+            --status-soon: #a855f7;
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --font-display: "Cormorant Garamond", serif;
+            --font-body: "DM Sans", sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Layout */
+        .app-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 400px;
+            grid-template-rows: auto auto 1fr;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dim));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .logo-text span { color: var(--accent-gold); }
+
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .date-nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-elevated);
+            padding: 6px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .date-nav button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .date-nav button:hover {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
+        .current-date {
+            font-weight: 600;
+            font-size: 14px;
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .time-display {
+            font-size: 28px;
+            font-weight: 700;
+            font-family: var(--font-display);
+            color: var(--accent-gold);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .notification-btn {
+            position: relative;
+            width: 38px;
+            height: 38px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .notification-btn:hover {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 16px;
+            height: 16px;
+            background: var(--accent-rose);
+            border-radius: 50%;
+            font-size: 9px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 10px 5px 5px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--accent-emerald), var(--accent-sky));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .user-name { font-weight: 600; font-size: 13px; }
+        .user-role { font-size: 10px; color: var(--text-muted); }
+
+        /* Time Slider Bar */
+        .time-slider-bar {
+            grid-column: 1 / -1;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 16px 24px;
+        }
+
+        .time-slider-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .time-slider-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .time-slider-label strong {
+            color: var(--accent-gold);
+            font-size: 18px;
+            font-family: var(--font-display);
+            min-width: 50px;
+        }
+
+        .time-slider-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .time-slider-track {
+            position: relative;
+            height: 40px;
+            background: var(--bg-elevated);
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+            overflow: hidden;
+        }
+
+        .time-slider-heatmap {
+            position: absolute;
+            inset: 0;
+            display: flex;
+        }
+
+        .heatmap-segment {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 2px;
+            transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .heatmap-segment:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .heatmap-segment::before {
+            content: attr(data-hour);
+            position: absolute;
+            top: 3px;
+            font-size: 9px;
+            color: var(--text-muted);
+        }
+
+        .heatmap-bar {
+            width: 70%;
+            border-radius: 3px 3px 0 0;
+            transition: all 0.3s;
+        }
+
+        .heatmap-bar.low { background: var(--status-available); }
+        .heatmap-bar.medium { background: var(--accent-amber); }
+        .heatmap-bar.high { background: var(--accent-rose); }
+        .heatmap-bar.peak { background: var(--status-occupied); }
+
+        .time-slider-input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .time-slider-thumb {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent-gold);
+            box-shadow: 0 0 10px var(--accent-gold);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .time-slider-thumb::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--accent-gold);
+        }
+
+        .time-labels {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 4px;
+        }
+
+        .time-label {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .load-summary {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            padding-left: 16px;
+            border-left: 1px solid var(--border-subtle);
+        }
+
+        .load-stat {
+            text-align: center;
+        }
+
+        .load-stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            font-family: var(--font-display);
+        }
+
+        .load-stat-value.available { color: var(--status-available); }
+        .load-stat-value.reserved { color: var(--status-reserved); }
+        .load-stat-value.occupied { color: var(--status-occupied); }
+
+        .load-stat-label {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-subtle);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+        }
+
+        /* Stats */
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .stat-icon.gold { background: rgba(212, 168, 83, 0.15); }
+        .stat-icon.emerald { background: rgba(52, 211, 153, 0.15); }
+        .stat-icon.rose { background: rgba(251, 113, 133, 0.15); }
+        .stat-icon.sky { background: rgba(56, 189, 248, 0.15); }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: var(--font-display);
+        }
+
+        .stat-change {
+            font-size: 10px;
+            color: var(--accent-emerald);
+        }
+
+        /* Legend */
+        .legend {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .legend-title {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+        }
+
+        .legend-dot.available { background: var(--status-available); }
+        .legend-dot.reserved { background: var(--status-reserved); }
+        .legend-dot.occupied { background: var(--status-occupied); }
+        .legend-dot.soon { background: var(--status-soon); }
+
+        /* Table List */
+        .table-list-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .filter-tab {
+            padding: 4px 8px;
+            background: none;
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-tab:hover { border-color: var(--border); color: var(--text-secondary); }
+        .filter-tab.active { 
+            background: var(--accent-gold); 
+            border-color: var(--accent-gold); 
+            color: var(--bg-dark); 
+        }
+
+        .table-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .table-list-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .table-list-item:hover {
+            border-color: var(--border);
+            transform: translateX(3px);
+        }
+
+        .table-list-item.selected {
+            border-color: var(--accent-gold);
+            background: rgba(212, 168, 83, 0.05);
+        }
+
+        .table-list-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-family: var(--font-display);
+            font-size: 16px;
+            border: 2px solid;
+        }
+
+        .table-list-number.available { 
+            background: rgba(34, 197, 94, 0.1); 
+            border-color: var(--status-available); 
+            color: var(--status-available);
+        }
+        .table-list-number.reserved { 
+            background: rgba(245, 158, 11, 0.1); 
+            border-color: var(--status-reserved); 
+            color: var(--status-reserved);
+        }
+        .table-list-number.occupied { 
+            background: rgba(239, 68, 68, 0.1); 
+            border-color: var(--status-occupied); 
+            color: var(--status-occupied);
+        }
+        .table-list-number.soon { 
+            background: rgba(168, 85, 247, 0.1); 
+            border-color: var(--status-soon); 
+            color: var(--status-soon);
+        }
+
+        .table-list-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .table-list-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .table-list-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 8px;
+        }
+
+        .table-list-guest {
+            font-size: 11px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .table-list-time {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            border-color: var(--accent-gold);
+            background: rgba(212, 168, 83, 0.05);
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dim));
+            border-color: transparent;
+            color: var(--bg-dark);
+        }
+
+        .action-btn.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(212, 168, 83, 0.3);
+        }
+
+        /* Main Content - Floor Plan */
+        .main-content {
+            padding: 16px;
+            background: var(--bg-dark);
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .floor-plan-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .floor-tabs {
+            display: flex;
+            gap: 6px;
+        }
+
+        .floor-tab {
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .floor-tab.active {
+            background: var(--accent-gold);
+            border-color: var(--accent-gold);
+            color: var(--bg-dark);
+        }
+
+        .view-controls {
+            display: flex;
+            gap: 6px;
+        }
+
+        .view-btn {
+            width: 36px;
+            height: 36px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .view-btn:hover, .view-btn.active {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        /* Floor Plan Container */
+        .floor-plan-container {
+            flex: 1;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            min-height: 500px;
+        }
+
+        .floor-plan {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 500px;
+        }
+
+        /* Architectural Elements */
+        .arch-element {
+            position: absolute;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+        }
+
+        /* Walls */
+        .wall {
+            background: var(--border);
+        }
+
+        .wall.horizontal {
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .wall.vertical {
+            width: 4px;
+            border-radius: 2px;
+        }
+
+        /* Kitchen */
+        .kitchen {
+            background: repeating-linear-gradient(
+                45deg,
+                var(--bg-elevated),
+                var(--bg-elevated) 10px,
+                var(--bg-card) 10px,
+                var(--bg-card) 20px
+            );
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Bar counter */
+        .bar-counter {
+            background: linear-gradient(90deg, var(--bg-elevated) 0%, var(--border) 50%, var(--bg-elevated) 100%);
+            border: 2px solid var(--accent-gold);
+            border-radius: 20px 20px 8px 8px;
+        }
+
+        .bar-counter-label {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-gold);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        /* Entrance */
+        .entrance {
+            background: var(--bg-dark);
+            border: 2px dashed var(--accent-emerald);
+            border-radius: 0 0 12px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .entrance-label {
+            color: var(--accent-emerald);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* WC */
+        .wc {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 10px;
+        }
+
+        /* Hostess stand */
+        .hostess-stand {
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dim));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-dark);
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Plants / decor */
+        .plant {
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        /* Pillar */
+        .pillar {
+            background: var(--border);
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Window markers */
+        .window {
+            background: linear-gradient(180deg, rgba(56, 189, 248, 0.1) 0%, transparent 100%);
+            border-left: 3px solid var(--accent-sky);
+        }
+
+        .window-label {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            color: var(--accent-sky);
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        /* Zone overlays */
+        .zone-overlay {
+            position: absolute;
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            pointer-events: none;
+        }
+
+        .zone-overlay-label {
+            position: absolute;
+            top: -10px;
+            left: 12px;
+            background: var(--bg-card);
+            padding: 2px 8px;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .zone-overlay.vip {
+            border-color: var(--accent-gold);
+        }
+
+        .zone-overlay.vip .zone-overlay-label {
+            color: var(--accent-gold);
+        }
+
+        /* Tables */
+        .table {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+
+        .table:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .table-shape {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid;
+            transition: all 0.3s;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .table.round .table-shape { border-radius: 50%; }
+        .table.square .table-shape { border-radius: 10px; }
+        .table.rect .table-shape { border-radius: 12px; }
+
+        .table-number {
+            font-weight: 700;
+            font-size: 14px;
+            font-family: var(--font-display);
+            color: var(--text-primary);
+        }
+
+        .table-seats {
+            position: absolute;
+            bottom: -16px;
+            font-size: 9px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        /* Chair indicators */
+        .chairs {
+            position: absolute;
+            inset: -8px;
+            pointer-events: none;
+        }
+
+        .chair {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        /* Table States */
+        .table.available .table-shape {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: var(--status-available);
+        }
+
+        .table.reserved .table-shape {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--status-reserved);
+        }
+
+        .table.occupied .table-shape {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--status-occupied);
+        }
+
+        .table.soon .table-shape {
+            background: rgba(168, 85, 247, 0.1);
+            border-color: var(--status-soon);
+            animation: pulse-soon 2s infinite;
+        }
+
+        @keyframes pulse-soon {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(168, 85, 247, 0); }
+        }
+
+        .table.selected .table-shape {
+            box-shadow: 0 0 0 4px var(--accent-gold), 0 4px 16px rgba(212, 168, 83, 0.4);
+        }
+
+        .table-time {
+            position: absolute;
+            top: -18px;
+            background: var(--bg-dark);
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        /* Right Panel */
+        .right-panel {
+            background: var(--bg-card);
+            border-left: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .panel-tab {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .panel-tab.active { color: var(--accent-gold); }
+
+        .panel-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 12px;
+            right: 12px;
+            height: 2px;
+            background: var(--accent-gold);
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        /* AI Suggestion */
+        .ai-suggestion {
+            background: linear-gradient(135deg, rgba(212, 168, 83, 0.08), rgba(52, 211, 153, 0.04));
+            border: 1px solid rgba(212, 168, 83, 0.25);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .ai-icon {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-emerald));
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .ai-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-gold);
+        }
+
+        .ai-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Booking Form */
+        .booking-form { display: none; }
+        .booking-form.active { display: block; }
+
+        .form-section { margin-bottom: 20px; }
+
+        .form-section-title {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .selected-table-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .selected-table-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dim));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: var(--font-display);
+            color: var(--bg-dark);
+        }
+
+        .selected-table-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .selected-table-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .form-group { margin-bottom: 10px; }
+
+        .form-label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: var(--font-body);
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.1);
+        }
+
+        .form-input::placeholder { color: var(--text-muted); }
+
+        .guests-selector {
+            display: flex;
+            gap: 6px;
+        }
+
+        .guest-btn {
+            flex: 1;
+            padding: 10px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .guest-btn:hover {
+            border-color: var(--border);
+            color: var(--text-primary);
+        }
+
+        .guest-btn.active {
+            background: var(--accent-gold);
+            border-color: var(--accent-gold);
+            color: var(--bg-dark);
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .time-slot {
+            padding: 8px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .time-slot:hover:not(.disabled) {
+            border-color: var(--border);
+            color: var(--text-primary);
+        }
+
+        .time-slot.active {
+            background: var(--accent-gold);
+            border-color: var(--accent-gold);
+            color: var(--bg-dark);
+        }
+
+        .time-slot.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dim));
+            border: none;
+            color: var(--bg-dark);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(212, 168, 83, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        /* Bookings List */
+        .bookings-list { display: none; }
+        .bookings-list.active { display: block; }
+
+        .booking-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .booking-card:hover {
+            border-color: var(--border);
+            transform: translateX(3px);
+        }
+
+        .booking-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .booking-time {
+            font-size: 16px;
+            font-weight: 700;
+            font-family: var(--font-display);
+        }
+
+        .booking-status {
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .booking-status.confirmed { background: rgba(34, 197, 94, 0.15); color: var(--status-available); }
+        .booking-status.pending { background: rgba(245, 158, 11, 0.15); color: var(--status-reserved); }
+        .booking-status.seated { background: rgba(168, 85, 247, 0.15); color: var(--status-soon); }
+
+        .booking-guest {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .booking-details {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            display: none;
+            min-width: 180px;
+        }
+
+        .tooltip.show {
+            display: block;
+            animation: tooltipIn 0.2s ease;
+        }
+
+        @keyframes tooltipIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tooltip-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .tooltip-table {
+            font-weight: 700;
+            font-family: var(--font-display);
+            font-size: 16px;
+        }
+
+        .tooltip-status {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .tooltip-status.available { background: rgba(34, 197, 94, 0.15); color: var(--status-available); }
+        .tooltip-status.reserved { background: rgba(245, 158, 11, 0.15); color: var(--status-reserved); }
+        .tooltip-status.occupied { background: rgba(239, 68, 68, 0.15); color: var(--status-occupied); }
+        .tooltip-status.soon { background: rgba(168, 85, 247, 0.15); color: var(--status-soon); }
+
+        .tooltip-info {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .tooltip-guest {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .tooltip-guest-name {
+            font-weight: 600;
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+
+        .tooltip-guest-details {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-card); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🍽️</div>
+                <div class="logo-text">Resto<span>Admin</span></div>
+            </div>
+            
+            <div class="header-center">
+                <div class="date-nav">
+                    <button onclick="changeDate(-1)">◀</button>
+                    <span class="current-date" id="currentDate">Сегодня, 21 января</span>
+                    <button onclick="changeDate(1)">▶</button>
+                </div>
+                <div class="time-display" id="currentTime">19:45</div>
+            </div>
+
+            <div class="header-right">
+                <button class="notification-btn">
+                    🔔
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="user-profile">
+                    <div class="user-avatar">АН</div>
+                    <div class="user-info">
+                        <div class="user-name">Анна Новикова</div>
+                        <div class="user-role">Хостес</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Time Slider Bar -->
+        <div class="time-slider-bar">
+            <div class="time-slider-container">
+                <div class="time-slider-label">
+                    <span>Просмотр на</span>
+                    <strong id="viewTimeDisplay">19:45</strong>
+                </div>
+                
+                <div class="time-slider-wrapper">
+                    <div class="time-slider-track">
+                        <div class="time-slider-heatmap" id="heatmap">
+                            <!-- Generated by JS -->
+                        </div>
+                        <input type="range" class="time-slider-input" id="timeSlider" 
+                               min="12" max="23.75" step="0.25" value="19.75">
+                        <div class="time-slider-thumb" id="timeThumb"></div>
+                    </div>
+                    <div class="time-labels">
+                        <span class="time-label">12:00</span>
+                        <span class="time-label">14:00</span>
+                        <span class="time-label">16:00</span>
+                        <span class="time-label">18:00</span>
+                        <span class="time-label">20:00</span>
+                        <span class="time-label">22:00</span>
+                        <span class="time-label">00:00</span>
+                    </div>
+                </div>
+
+                <div class="load-summary">
+                    <div class="load-stat">
+                        <div class="load-stat-value available" id="availableCount">8</div>
+                        <div class="load-stat-label">Свободно</div>
+                    </div>
+                    <div class="load-stat">
+                        <div class="load-stat-value reserved" id="reservedCount">6</div>
+                        <div class="load-stat-label">Бронь</div>
+                    </div>
+                    <div class="load-stat">
+                        <div class="load-stat-value occupied" id="occupiedCount">4</div>
+                        <div class="load-stat-label">Занято</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Брони</span>
+                        <div class="stat-icon gold">📅</div>
+                    </div>
+                    <div class="stat-value">24</div>
+                    <div class="stat-change">↑ 15%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Загрузка</span>
+                        <div class="stat-icon rose">📊</div>
+                    </div>
+                    <div class="stat-value">78%</div>
+                    <div class="stat-change">пик 20:00</div>
+                </div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-title">Статусы столов</div>
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <div class="legend-dot available"></div>
+                        <span>Свободен</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot reserved"></div>
+                        <span>Забронирован</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot occupied"></div>
+                        <span>Занят</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot soon"></div>
+                        <span>Скоро освоб.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table List -->
+            <div class="table-list-section">
+                <div class="section-header">
+                    <span class="section-title">Столы</span>
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" onclick="filterTables('all')">Все</button>
+                        <button class="filter-tab" onclick="filterTables('available')">🟢</button>
+                        <button class="filter-tab" onclick="filterTables('reserved')">🟡</button>
+                        <button class="filter-tab" onclick="filterTables('occupied')">🔴</button>
+                    </div>
+                </div>
+                <div class="table-list" id="tableList">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <button class="action-btn primary" onclick="openNewBooking()">
+                    ➕ Новая бронь
+                </button>
+                <button class="action-btn">
+                    👥 Walk-in
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="floor-plan-header">
+                <div class="floor-tabs">
+                    <button class="floor-tab active">Основной зал</button>
+                    <button class="floor-tab">2 этаж</button>
+                    <button class="floor-tab">Терраса</button>
+                </div>
+                <div class="view-controls">
+                    <button class="view-btn active" title="Схема">🗺️</button>
+                    <button class="view-btn" title="3D">🎮</button>
+                </div>
+            </div>
+
+            <div class="floor-plan-container">
+                <div class="floor-plan" id="floorPlan">
+                    <!-- Architectural elements - generated by JS -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Panel -->
+        <aside class="right-panel">
+            <div class="panel-tabs">
+                <button class="panel-tab active" onclick="switchTab('booking')">Бронь</button>
+                <button class="panel-tab" onclick="switchTab('list')">Список</button>
+            </div>
+
+            <div class="panel-content">
+                <div class="ai-suggestion">
+                    <div class="ai-header">
+                        <div class="ai-icon">✨</div>
+                        <span class="ai-label">AI-подсказка</span>
+                    </div>
+                    <div class="ai-text" id="aiSuggestion">
+                        <strong>Пик в 20:00</strong> — на это время свободен только 1 стол. Предлагайте гостям 19:00 или 21:00.
+                    </div>
+                </div>
+
+                <!-- Booking Form -->
+                <div class="booking-form active" id="bookingForm">
+                    <div class="form-section">
+                        <div class="form-section-title">Выбранный стол</div>
+                        <div class="selected-table-card" id="selectedTableCard" style="display: none;">
+                            <div class="selected-table-icon" id="selectedTableNumber">5</div>
+                            <div class="selected-table-info">
+                                <h4 id="selectedTableName">Стол №5</h4>
+                                <p id="selectedTableDetails">4 места • Основной зал</p>
+                            </div>
+                        </div>
+                        <div id="noTableSelected" style="color: var(--text-muted); font-size: 13px; padding: 12px; background: var(--bg-elevated); border-radius: 10px; text-align: center;">
+                            ← Выберите стол на схеме или в списке
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">Гости</div>
+                        <div class="guests-selector">
+                            <button class="guest-btn" onclick="selectGuests(1)">1</button>
+                            <button class="guest-btn active" onclick="selectGuests(2)">2</button>
+                            <button class="guest-btn" onclick="selectGuests(3)">3</button>
+                            <button class="guest-btn" onclick="selectGuests(4)">4</button>
+                            <button class="guest-btn" onclick="selectGuests(5)">5+</button>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">Время</div>
+                        <div class="time-slots" id="timeSlots">
+                            <!-- Generated by JS based on availability -->
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">Контакт</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Имя</label>
+                                <input type="text" class="form-input" placeholder="Иван Петров">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Телефон</label>
+                                <input type="tel" class="form-input" placeholder="+7 (___) ___-__-__">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Комментарий</label>
+                            <input type="text" class="form-input" placeholder="День рождения, аллергии...">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-secondary">Отмена</button>
+                        <button class="btn btn-primary">✓ Забронировать</button>
+                    </div>
+                </div>
+
+                <!-- Bookings List -->
+                <div class="bookings-list" id="bookingsList">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tableTooltip">
+        <div class="tooltip-header">
+            <span class="tooltip-table">Стол 5</span>
+            <span class="tooltip-status available">Свободен</span>
+        </div>
+        <div class="tooltip-info">4 места • Основной зал</div>
+        <div class="tooltip-guest">
+            <div class="tooltip-guest-name">След. бронь: 20:00</div>
+            <div class="tooltip-guest-details">Петров А. • 2 гостя</div>
+        </div>
+    </div>
+
+    <script>
+        // ========== DATA ==========
+        
+        // Load data by hour (12:00 - 23:00)
+        const loadByHour = {
+            12: 15, 13: 25, 14: 40, 15: 30, 16: 20,
+            17: 35, 18: 60, 19: 85, 20: 95, 21: 80, 22: 50, 23: 25
+        };
+
+        // Bookings data
+        const bookings = [
+            { id: 1, tableId: 2, guest: 'Сидоров К.', phone: '+7 999 123-45-67', guests: 2, start: 18.5, end: 20, status: 'seated' },
+            { id: 2, tableId: 5, guest: 'Козлова М.', phone: '+7 999 234-56-78', guests: 4, start: 19.5, end: 21.5, status: 'confirmed', note: 'ДР' },
+            { id: 3, tableId: 7, guest: 'Новиков Д.', phone: '+7 999 345-67-89', guests: 2, start: 21, end: 23, status: 'confirmed', note: 'Годовщина' },
+            { id: 4, tableId: 8, guest: 'Смирнов А.', phone: '+7 999 456-78-90', guests: 5, start: 20, end: 22, status: 'pending' },
+            { id: 5, tableId: 9, guest: 'Белов И.', phone: '+7 999 567-89-01', guests: 6, start: 18, end: 20.25, status: 'seated' },
+            { id: 6, tableId: 10, guest: 'Кузнецов П.', phone: '+7 999 678-90-12', guests: 4, start: 19, end: 21, status: 'seated' },
+            { id: 7, tableId: 13, guest: 'VIP: Иванов П.', phone: '+7 999 789-01-23', guests: 6, start: 19.5, end: 22, status: 'seated', note: 'Дегустация' },
+            { id: 8, tableId: 15, guest: 'Walk-in', guests: 2, start: 19.5, end: 21, status: 'seated' },
+            { id: 9, tableId: 18, guest: 'Морозов В.', phone: '+7 999 890-12-34', guests: 3, start: 20.5, end: 22.5, status: 'confirmed' },
+            { id: 10, tableId: 3, guest: 'Волкова Е.', phone: '+7 999 901-23-45', guests: 3, start: 20.5, end: 22.5, status: 'confirmed' },
+        ];
+
+        // Tables data
+        const tables = [
+            // Terrace zone (window side)
+            { id: 1, x: 30, y: 80, seats: 2, shape: 'round', size: 50, zone: 'terrace' },
+            { id: 2, x: 30, y: 160, seats: 2, shape: 'round', size: 50, zone: 'terrace' },
+            { id: 3, x: 30, y: 240, seats: 4, shape: 'square', size: 60, zone: 'terrace' },
+            { id: 4, x: 30, y: 330, seats: 4, shape: 'square', size: 60, zone: 'terrace' },
+            
+            // Main hall center
+            { id: 5, x: 200, y: 100, seats: 4, shape: 'round', size: 65, zone: 'main' },
+            { id: 6, x: 300, y: 100, seats: 4, shape: 'round', size: 65, zone: 'main' },
+            { id: 7, x: 400, y: 100, seats: 2, shape: 'round', size: 50, zone: 'main' },
+            
+            { id: 8, x: 200, y: 200, seats: 6, shape: 'rect', size: 70, width: 110, zone: 'main' },
+            { id: 9, x: 350, y: 200, seats: 6, shape: 'rect', size: 70, width: 110, zone: 'main' },
+            
+            { id: 10, x: 200, y: 310, seats: 4, shape: 'square', size: 60, zone: 'main' },
+            { id: 11, x: 300, y: 310, seats: 4, shape: 'square', size: 60, zone: 'main' },
+            { id: 12, x: 400, y: 310, seats: 2, shape: 'round', size: 50, zone: 'main' },
+
+            // VIP zone
+            { id: 13, x: 550, y: 80, seats: 8, shape: 'rect', size: 80, width: 140, zone: 'vip' },
+            { id: 14, x: 590, y: 190, seats: 4, shape: 'round', size: 65, zone: 'vip' },
+
+            // Bar zone
+            { id: 15, x: 550, y: 340, seats: 2, shape: 'round', size: 45, zone: 'bar' },
+            { id: 16, x: 610, y: 340, seats: 2, shape: 'round', size: 45, zone: 'bar' },
+            { id: 17, x: 670, y: 340, seats: 2, shape: 'round', size: 45, zone: 'bar' },
+            { id: 18, x: 610, y: 410, seats: 4, shape: 'rect', size: 50, width: 80, zone: 'bar' },
+        ];
+
+        // ========== STATE ==========
+        let currentViewTime = 19.75; // 19:45
+        let selectedTable = null;
+        let selectedGuests = 2;
+        let currentFilter = 'all';
+
+        // ========== HELPERS ==========
+        function timeToString(time) {
+            const hours = Math.floor(time);
+            const minutes = Math.round((time - hours) * 60);
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        }
+
+        function getZoneName(zone) {
+            const zones = { 'terrace': 'У окна', 'main': 'Основной зал', 'vip': 'VIP', 'bar': 'Бар' };
+            return zones[zone] || zone;
+        }
+
+        function getTableStatusAtTime(tableId, time) {
+            const booking = bookings.find(b => b.tableId === tableId && b.start <= time && b.end > time);
+            if (!booking) return { status: 'available', booking: null };
+            
+            // Check if ending soon (within 30 min)
+            if (booking.end - time <= 0.5 && booking.status === 'seated') {
+                return { status: 'soon', booking };
+            }
+            
+            if (booking.status === 'seated') return { status: 'occupied', booking };
+            return { status: 'reserved', booking };
+        }
+
+        function getNextBookingForTable(tableId, time) {
+            return bookings
+                .filter(b => b.tableId === tableId && b.start > time)
+                .sort((a, b) => a.start - b.start)[0];
+        }
+
+        // ========== RENDER FUNCTIONS ==========
+        
+        function renderHeatmap() {
+            const container = document.getElementById('heatmap');
+            container.innerHTML = '';
+            
+            for (let hour = 12; hour < 24; hour++) {
+                const load = loadByHour[hour] || 0;
+                let level = 'low';
+                if (load > 80) level = 'peak';
+                else if (load > 60) level = 'high';
+                else if (load > 35) level = 'medium';
+                
+                const segment = document.createElement('div');
+                segment.className = 'heatmap-segment';
+                segment.setAttribute('data-hour', hour);
+                segment.innerHTML = `<div class="heatmap-bar ${level}" style="height: ${load * 0.35}px;"></div>`;
+                segment.onclick = () => {
+                    document.getElementById('timeSlider').value = hour;
+                    updateViewTime(hour);
+                };
+                container.appendChild(segment);
+            }
+        }
+
+        function renderArchitecture() {
+            const floor = document.getElementById('floorPlan');
+            
+            // Clear existing architecture
+            floor.querySelectorAll('.arch-element, .zone-overlay').forEach(el => el.remove());
+
+            // Kitchen
+            const kitchen = document.createElement('div');
+            kitchen.className = 'arch-element kitchen';
+            kitchen.style.cssText = 'right: 20px; top: 20px; width: 120px; height: 50px;';
+            kitchen.innerHTML = 'Кухня';
+            floor.appendChild(kitchen);
+
+            // Bar counter
+            const bar = document.createElement('div');
+            bar.className = 'arch-element bar-counter';
+            bar.style.cssText = 'right: 20px; bottom: 60px; width: 180px; height: 60px;';
+            bar.innerHTML = '<span class="bar-counter-label">Бар</span>';
+            floor.appendChild(bar);
+
+            // Entrance
+            const entrance = document.createElement('div');
+            entrance.className = 'arch-element entrance';
+            entrance.style.cssText = 'left: 150px; bottom: 0; width: 100px; height: 40px;';
+            entrance.innerHTML = '<span class="entrance-label">↑ Вход</span>';
+            floor.appendChild(entrance);
+
+            // Hostess stand
+            const hostess = document.createElement('div');
+            hostess.className = 'arch-element hostess-stand';
+            hostess.style.cssText = 'left: 270px; bottom: 15px; width: 50px; height: 30px;';
+            hostess.innerHTML = 'Хостес';
+            floor.appendChild(hostess);
+
+            // WC
+            const wc = document.createElement('div');
+            wc.className = 'arch-element wc';
+            wc.style.cssText = 'left: 350px; bottom: 10px; width: 60px; height: 40px;';
+            wc.innerHTML = 'WC';
+            floor.appendChild(wc);
+
+            // Windows (left side)
+            const window1 = document.createElement('div');
+            window1.className = 'arch-element window';
+            window1.style.cssText = 'left: 0; top: 60px; width: 20px; height: 340px;';
+            window1.innerHTML = '<span class="window-label">Панорамные окна</span>';
+            floor.appendChild(window1);
+
+            // Pillars
+            [[150, 150], [150, 280], [480, 150], [480, 280]].forEach(([x, y]) => {
+                const pillar = document.createElement('div');
+                pillar.className = 'arch-element pillar';
+                pillar.style.cssText = `left: ${x}px; top: ${y}px; width: 16px; height: 16px;`;
+                floor.appendChild(pillar);
+            });
+
+            // Plants
+            [[120, 50], [470, 50], [120, 400]].forEach(([x, y]) => {
+                const plant = document.createElement('div');
+                plant.className = 'arch-element plant';
+                plant.style.cssText = `left: ${x}px; top: ${y}px; width: 30px; height: 30px;`;
+                plant.innerHTML = '🌿';
+                floor.appendChild(plant);
+            });
+
+            // Zone overlays
+            const vipZone = document.createElement('div');
+            vipZone.className = 'zone-overlay vip';
+            vipZone.style.cssText = 'left: 520px; top: 50px; width: 220px; height: 230px;';
+            vipZone.innerHTML = '<span class="zone-overlay-label">VIP</span>';
+            floor.appendChild(vipZone);
+
+            const terraceZone = document.createElement('div');
+            terraceZone.className = 'zone-overlay';
+            terraceZone.style.cssText = 'left: 20px; top: 55px; width: 100px; height: 360px;';
+            terraceZone.innerHTML = '<span class="zone-overlay-label">У окна</span>';
+            floor.appendChild(terraceZone);
+        }
+
+        function renderTables() {
+            const floor = document.getElementById('floorPlan');
+            
+            // Remove existing tables
+            floor.querySelectorAll('.table').forEach(el => el.remove());
+
+            tables.forEach(table => {
+                const { status, booking } = getTableStatusAtTime(table.id, currentViewTime);
+                const nextBooking = getNextBookingForTable(table.id, currentViewTime);
+
+                const tableEl = document.createElement('div');
+                tableEl.className = `table ${table.shape} ${status}`;
+                tableEl.id = `table-${table.id}`;
+                tableEl.style.left = `${table.x}px`;
+                tableEl.style.top = `${table.y}px`;
+
+                const width = table.width || table.size;
+                const height = table.size;
+
+                let timeLabel = '';
+                if (booking && status !== 'available') {
+                    timeLabel = `<div class="table-time">${timeToString(booking.start)}</div>`;
+                } else if (nextBooking) {
+                    timeLabel = `<div class="table-time" style="color: var(--status-reserved);">→${timeToString(nextBooking.start)}</div>`;
+                }
+
+                tableEl.innerHTML = `
+                    ${timeLabel}
+                    <div class="table-shape" style="width: ${width}px; height: ${height}px;">
+                        <span class="table-number">${table.id}</span>
+                    </div>
+                    <span class="table-seats">${table.seats} мест</span>
+                `;
+
+                tableEl.addEventListener('click', () => selectTableHandler(table));
+                tableEl.addEventListener('mouseenter', (e) => showTooltip(e, table, status, booking, nextBooking));
+                tableEl.addEventListener('mouseleave', hideTooltip);
+
+                floor.appendChild(tableEl);
+            });
+        }
+
+        function renderTableList() {
+            const container = document.getElementById('tableList');
+            container.innerHTML = '';
+
+            const filteredTables = tables.filter(table => {
+                if (currentFilter === 'all') return true;
+                const { status } = getTableStatusAtTime(table.id, currentViewTime);
+                return status === currentFilter;
+            });
+
+            filteredTables.forEach(table => {
+                const { status, booking } = getTableStatusAtTime(table.id, currentViewTime);
+                const nextBooking = getNextBookingForTable(table.id, currentViewTime);
+
+                const item = document.createElement('div');
+                item.className = `table-list-item ${selectedTable?.id === table.id ? 'selected' : ''}`;
+                item.onclick = () => selectTableHandler(table);
+
+                let guestInfo = '';
+                let timeInfo = '';
+                
+                if (booking) {
+                    guestInfo = booking.guest;
+                    timeInfo = `${timeToString(booking.start)} - ${timeToString(booking.end)}`;
+                } else if (nextBooking) {
+                    guestInfo = `След: ${nextBooking.guest}`;
+                    timeInfo = timeToString(nextBooking.start);
+                }
+
+                item.innerHTML = `
+                    <div class="table-list-number ${status}">${table.id}</div>
+                    <div class="table-list-info">
+                        <div class="table-list-title">${getZoneName(table.zone)}</div>
+                        <div class="table-list-meta">
+                            <span>👥 ${table.seats}</span>
+                            <span>${table.shape === 'round' ? '⚪' : '⬜'}</span>
+                        </div>
+                        ${guestInfo ? `<div class="table-list-guest">${guestInfo}</div>` : ''}
+                    </div>
+                    ${timeInfo ? `<div class="table-list-time">${timeInfo}</div>` : ''}
+                `;
+
+                container.appendChild(item);
+            });
+        }
+
+        function renderBookingsList() {
+            const container = document.getElementById('bookingsList');
+            container.innerHTML = '';
+
+            const sortedBookings = [...bookings].sort((a, b) => a.start - b.start);
+
+            sortedBookings.forEach(booking => {
+                const card = document.createElement('div');
+                card.className = 'booking-card';
+                card.onclick = () => highlightTable(booking.tableId);
+
+                card.innerHTML = `
+                    <div class="booking-card-header">
+                        <span class="booking-time">${timeToString(booking.start)}</span>
+                        <span class="booking-status ${booking.status}">${
+                            booking.status === 'confirmed' ? 'Подтв.' :
+                            booking.status === 'pending' ? 'Ожидает' : 'Сидят'
+                        }</span>
+                    </div>
+                    <div class="booking-guest">${booking.guest}</div>
+                    <div class="booking-details">
+                        <span>🪑 Стол ${booking.tableId}</span>
+                        <span>👥 ${booking.guests}</span>
+                        ${booking.note ? `<span>📝 ${booking.note}</span>` : ''}
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function renderTimeSlots() {
+            const container = document.getElementById('timeSlots');
+            container.innerHTML = '';
+
+            const slots = [];
+            for (let t = 18; t < 23; t += 0.5) {
+                const available = selectedTable ? 
+                    !bookings.some(b => b.tableId === selectedTable.id && b.start < t + 2 && b.end > t) :
+                    true;
+                slots.push({ time: t, available });
+            }
+
+            slots.forEach(slot => {
+                const btn = document.createElement('button');
+                btn.className = `time-slot ${!slot.available ? 'disabled' : ''} ${slot.time === currentViewTime ? 'active' : ''}`;
+                btn.textContent = timeToString(slot.time);
+                if (slot.available) {
+                    btn.onclick = () => {
+                        document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('active'));
+                        btn.classList.add('active');
+                    };
+                }
+                container.appendChild(btn);
+            });
+        }
+
+        function updateLoadSummary() {
+            let available = 0, reserved = 0, occupied = 0;
+
+            tables.forEach(table => {
+                const { status } = getTableStatusAtTime(table.id, currentViewTime);
+                if (status === 'available') available++;
+                else if (status === 'reserved') reserved++;
+                else occupied++;
+            });
+
+            document.getElementById('availableCount').textContent = available;
+            document.getElementById('reservedCount').textContent = reserved;
+            document.getElementById('occupiedCount').textContent = occupied;
+
+            // Update AI suggestion based on load
+            const total = tables.length;
+            const loadPercent = ((reserved + occupied) / total) * 100;
+            const aiEl = document.getElementById('aiSuggestion');
+
+            if (loadPercent > 80) {
+                aiEl.innerHTML = `<strong>Высокая загрузка!</strong> На ${timeToString(currentViewTime)} свободно только ${available} ${available === 1 ? 'стол' : 'столов'}. Рекомендуйте другое время.`;
+            } else if (available > total * 0.6) {
+                aiEl.innerHTML = `<strong>Низкая загрузка</strong> на ${timeToString(currentViewTime)}. Хорошее время для walk-in гостей.`;
+            } else {
+                aiEl.innerHTML = `<strong>Нормальная загрузка.</strong> Свободно ${available} из ${total} столов.`;
+            }
+        }
+
+        // ========== EVENT HANDLERS ==========
+
+        function updateViewTime(time) {
+            currentViewTime = parseFloat(time);
+            document.getElementById('viewTimeDisplay').textContent = timeToString(currentViewTime);
+            
+            // Update slider thumb position
+            const slider = document.getElementById('timeSlider');
+            const percent = ((currentViewTime - 12) / (23.75 - 12)) * 100;
+            document.getElementById('timeThumb').style.left = `${percent}%`;
+
+            renderTables();
+            renderTableList();
+            updateLoadSummary();
+            renderTimeSlots();
+        }
+
+        function selectTableHandler(table) {
+            // Remove previous selection
+            document.querySelectorAll('.table.selected').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('.table-list-item.selected').forEach(el => el.classList.remove('selected'));
+            
+            selectedTable = table;
+            
+            // Add selection
+            document.getElementById(`table-${table.id}`)?.classList.add('selected');
+
+            // Update form
+            document.getElementById('selectedTableCard').style.display = 'flex';
+            document.getElementById('noTableSelected').style.display = 'none';
+            document.getElementById('selectedTableNumber').textContent = table.id;
+            document.getElementById('selectedTableName').textContent = `Стол №${table.id}`;
+            document.getElementById('selectedTableDetails').textContent = `${table.seats} мест • ${getZoneName(table.zone)}`;
+
+            switchTab('booking');
+            renderTableList();
+            renderTimeSlots();
+        }
+
+        function highlightTable(id) {
+            const table = tables.find(t => t.id === id);
+            if (table) {
+                selectTableHandler(table);
+                document.getElementById(`table-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function showTooltip(e, table, status, booking, nextBooking) {
+            const tooltip = document.getElementById('tableTooltip');
+            const statusNames = {
+                'available': 'Свободен', 'reserved': 'Забронирован',
+                'occupied': 'Занят', 'soon': 'Скоро освоб.'
+            };
+
+            tooltip.querySelector('.tooltip-table').textContent = `Стол ${table.id}`;
+            tooltip.querySelector('.tooltip-status').textContent = statusNames[status];
+            tooltip.querySelector('.tooltip-status').className = `tooltip-status ${status}`;
+            tooltip.querySelector('.tooltip-info').textContent = `${table.seats} мест • ${getZoneName(table.zone)}`;
+
+            const guestSection = tooltip.querySelector('.tooltip-guest');
+            if (booking) {
+                guestSection.style.display = 'block';
+                guestSection.querySelector('.tooltip-guest-name').textContent = 
+                    status === 'soon' ? `Освободится ~${timeToString(booking.end)}` : `${timeToString(booking.start)} - ${timeToString(booking.end)}`;
+                guestSection.querySelector('.tooltip-guest-details').textContent = `${booking.guest} • ${booking.guests} гостей`;
+            } else if (nextBooking) {
+                guestSection.style.display = 'block';
+                guestSection.querySelector('.tooltip-guest-name').textContent = `След. бронь: ${timeToString(nextBooking.start)}`;
+                guestSection.querySelector('.tooltip-guest-details').textContent = `${nextBooking.guest} • ${nextBooking.guests} гостей`;
+            } else {
+                guestSection.style.display = 'none';
+            }
+
+            tooltip.style.left = `${e.pageX + 15}px`;
+            tooltip.style.top = `${e.pageY + 15}px`;
+            tooltip.classList.add('show');
+        }
+
+        function hideTooltip() {
+            document.getElementById('tableTooltip').classList.remove('show');
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.panel-tab').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.booking-form, .bookings-list').forEach(el => el.classList.remove('active'));
+
+            if (tab === 'booking') {
+                document.querySelector('.panel-tab:nth-child(1)').classList.add('active');
+                document.getElementById('bookingForm').classList.add('active');
+            } else {
+                document.querySelector('.panel-tab:nth-child(2)').classList.add('active');
+                document.getElementById('bookingsList').classList.add('active');
+            }
+        }
+
+        function filterTables(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderTableList();
+        }
+
+        function selectGuests(num) {
+            selectedGuests = num;
+            document.querySelectorAll('.guest-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function openNewBooking() {
+            selectedTable = null;
+            document.querySelectorAll('.table.selected').forEach(el => el.classList.remove('selected'));
+            document.getElementById('selectedTableCard').style.display = 'none';
+            document.getElementById('noTableSelected').style.display = 'block';
+            switchTab('booking');
+            renderTableList();
+        }
+
+        function changeDate(delta) {
+            const dates = ['Вчера, 20 января', 'Сегодня, 21 января', 'Завтра, 22 января'];
+            const dateEl = document.getElementById('currentDate');
+            const current = dates.indexOf(dateEl.textContent);
+            dateEl.textContent = dates[Math.max(0, Math.min(2, current + delta))];
+        }
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = 
+                now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // ========== INIT ==========
+        
+        document.getElementById('timeSlider').addEventListener('input', (e) => {
+            updateViewTime(e.target.value);
+        });
+
+        renderHeatmap();
+        renderArchitecture();
+        renderTables();
+        renderTableList();
+        renderBookingsList();
+        renderTimeSlots();
+        updateLoadSummary();
+        updateViewTime(19.75);
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
+</body>
+</html>

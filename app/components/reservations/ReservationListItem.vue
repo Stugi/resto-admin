@@ -1,6 +1,7 @@
 <!-- app/components/reservations/ReservationListItem.vue -->
 <script setup lang="ts">
-import type { ReservationWithDetails } from '~~/types'
+import type { ReservationWithDetails } from "~~/types"
+import { formatPhone } from "~/composables/usePhoneMask"
 
 const props = defineProps<{
     reservation: ReservationWithDetails
@@ -16,16 +17,14 @@ const formattedTime = computed(() => {
 </script>
 
 <template>
-    <div
-        class="group p-4 bg-surface-light/30 border border-white-5 rounded-2xl hover:border-brand/40 hover:bg-surface-light/60 transition-all cursor-pointer"
-    >
+    <div class="group p-4 bg-surface-light/30 border border-white-5 rounded-2xl transition-all">
         <div class="flex justify-between items-start mb-3">
             <div class="space-y-0.5">
                 <p class="font-bold text-sm text-white group-hover:text-brand transition-colors">
                     {{ reservation.guest.name }}
                 </p>
                 <p class="text-2xs text-muted font-medium tracking-tight">
-                    {{ reservation.guest.phone }}
+                    {{ formatPhone(reservation.guest.phone) }}
                 </p>
             </div>
             <div class="px-2 py-1 bg-brand/10 border border-brand/20 rounded-lg">

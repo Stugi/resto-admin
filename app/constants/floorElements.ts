@@ -96,10 +96,10 @@ export const FLOOR_ELEMENTS: Record<ElementType, ElementConfig> = {
     column: {
         icon: 'lucide:square',
         label: 'Колонна',
-        defaultWidth: 20,
-        defaultHeight: 20,
-        bgColor: 'bg-white/20',
-        textColor: 'text-white/50',
+        defaultWidth: 14,
+        defaultHeight: 14,
+        bgColor: 'bg-white/10',
+        textColor: 'text-white/30',
         zIndex: 3,
     },
     window: {
@@ -118,9 +118,18 @@ export const FLOOR_ELEMENTS: Record<ElementType, ElementConfig> = {
         label: 'VIP-зона',
         defaultWidth: 150,
         defaultHeight: 150,
-        bgColor: 'bg-brand/10',
+        bgColor: 'bg-brand/5',
         textColor: 'text-brand',
         zIndex: 1, // Ниже всех — это фон
+    },
+    terrace_zone: {
+        icon: 'lucide:sun',
+        label: 'У окна',
+        defaultWidth: 100,
+        defaultHeight: 300,
+        bgColor: 'bg-sky-400/5',
+        textColor: 'text-sky-300',
+        zIndex: 1,
     },
 }
 

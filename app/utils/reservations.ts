@@ -5,6 +5,7 @@ import type { Reservation, Guest } from '@prisma/client'
  */
 export interface NearestBooking {
     guestName: string
+    guestPhone: string
     peopleCount: number
     startTime: string // "19:30"
 }
@@ -27,6 +28,7 @@ export function getNearestBooking(
 
     return {
         guestName: nearest.guest?.name ?? 'Гость',
+        guestPhone: nearest.guest?.phone ?? '',
         peopleCount: nearest.peopleCount,
         startTime: formatReservationTime(new Date(nearest.startTime)),
     }

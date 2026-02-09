@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import type { TableWithStatus } from "~~/types"
 import { getNearestBooking } from "~/utils/reservations"
+import { formatPhone } from "~/composables/usePhoneMask"
 
 interface Props {
     table: TableWithStatus
@@ -81,10 +82,7 @@ const nearestBooking = computed(() => getNearestBooking(props.table.reservations
             <div v-if="nearestBooking" class="row-bottom">
                 <span class="booking-guest">{{ nearestBooking.guestName }}</span>
                 <span class="divider">·</span>
-                <span class="booking-people">
-                    <Icon name="lucide:user" class="w-3 h-3" />
-                    {{ nearestBooking.peopleCount }}
-                </span>
+                <span class="booking-phone">{{ formatPhone(nearestBooking.guestPhone) }}</span>
                 <span class="divider">·</span>
                 <span class="booking-time">{{ nearestBooking.startTime }}</span>
             </div>
@@ -204,12 +202,10 @@ const nearestBooking = computed(() => getNearestBooking(props.table.reservations
     max-width: 7rem;
 }
 
-.booking-people {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    font-weight: 600;
+.booking-phone {
+    font-weight: 500;
     color: var(--color-muted);
     white-space: nowrap;
+    font-size: var(--font-size-2xs);
 }
 </style>

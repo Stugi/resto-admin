@@ -40,9 +40,11 @@ const sizeStyle = computed(() => {
 })
 
 /**
- * VIP-зона рендерится как полупрозрачная область
+ * Зоны-оверлеи рендерятся как полупрозрачные области с лейблом
  */
-const isZone = computed(() => props.element.type === 'vip_zone')
+const isZone = computed(() =>
+    props.element.type === 'vip_zone' || props.element.type === 'terrace_zone'
+)
 
 /**
  * Стены рендерятся без иконки
@@ -94,10 +96,15 @@ const isWall = computed(() =>
     transition: all var(--duration-fast) var(--ease-out);
 }
 
-/* VIP-зона — большая область */
+/* Зоны-оверлеи — большая область */
 .floor-element.is-zone {
-    border: 2px dashed color-mix(in srgb, var(--color-brand) 40%, transparent);
+    border: 2px dashed var(--color-white-10);
     border-radius: var(--radius-xl);
+}
+
+/* VIP-зона — золотая рамка */
+.floor-element.is-zone.bg-brand\/5 {
+    border-color: color-mix(in srgb, var(--color-brand) 30%, transparent);
 }
 
 .zone-label {

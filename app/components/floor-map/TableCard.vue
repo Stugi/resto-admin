@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { TableWithStatus } from "~~/types"
+import { formatPhone } from "~/composables/usePhoneMask"
+
 // Props & Emits
 const props = defineProps<{
     table: TableWithStatus
@@ -18,6 +20,10 @@ const statusClasses = computed(() => ({
 }))
 
 const isSelected = computed(() => props.table.id === props.selectedTableId)
+
+/** Гость из ближайшей брони (для занятых/забронированных столов) */
+const currentGuest = computed(() => props.table.reservations?.[0]?.guest ?? null)
+
 // Methods
 const handleSelectTable = (tableId: string) => {
     if (props.selectedTableId === tableId) {
@@ -40,9 +46,15 @@ const handleSelectTable = (tableId: string) => {
             :class="statusClasses"
         ></div>
 
-        <span class="text-4xl font-black mb-2">{{ table.name }}</span>
+        <span class="text-3xl font-black mb-1">{{ table.name }}</span>
         <div class="text-muted text-2xs font-bold uppercase tracking-widest">
             {{ table.capacity }} места
+        </div>
+
+        <!-- Гость (для занятых/забронированных столов) -->
+        <div v-if="table.status !== 'free' && currentGuest" class="mt-2 text-center w-full min-w-0 px-1">
+            <p class="text-2xs font-semibold text-white truncate">{{ currentGuest.name }}</p>
+            <p class="text-[10px] text-muted truncate">{{ formatPhone(currentGuest.phone) }}</p>
         </div>
     </div>
 </template>
