@@ -133,6 +133,7 @@ model Reservation {
   endTime     DateTime @map("end_time")
   peopleCount Int      @map("people_count")
   status      String   @default("confirmed") @map("status") //Статус бронирования: confirmed, seated, finished, cancelled
+  comment     String?  // Комментарий к брони (день рождения, аллергии и т.д.)
 
   createdBy String?   @map("created_by") // login
   createdAt DateTime  @default(now()) @map("created_at")

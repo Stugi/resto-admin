@@ -7,6 +7,7 @@ const bodySchema = z.object({
     guestPhone: z.string().regex(/^7\d{10}$/, 'Неверный формат телефона'),
     startTime: z.string().regex(/^\d{1,2}:\d{2}$/, 'Неверный формат времени'),
     peopleCount: z.number().int().min(1, 'Минимум 1 гость').max(20, 'Максимум 20 гостей'),
+    comment: z.string().max(500, 'Комментарий слишком длинный').optional(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -22,7 +23,7 @@ export default defineEventHandler(async (event) => {
         })
     }
 
-    const { tableId, guestName, guestPhone, startTime, peopleCount } = result.data
+    const { tableId, guestName, guestPhone, startTime, peopleCount, comment } = result.data
 
     // 2. Формируем DateTime (сегодняшняя дата + время из формы)
     const startDateTime = new Date()
@@ -81,7 +82,8 @@ export default defineEventHandler(async (event) => {
             startTime: startDateTime,
             endTime: endDateTime,
             peopleCount,
-            status: 'confirmed'
+            status: 'confirmed',
+            comment: comment || null,
         }
     })
 })

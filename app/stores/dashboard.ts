@@ -63,6 +63,11 @@ export const useDashboardStore = defineStore('dashboard', () => {
     const viewMode = ref<ViewMode>('grid')
     const rightSidebarTab = ref<RightSidebarTab>('booking')
 
+    // Mobile UI state
+    const mobileMenuOpen = ref(false)
+    const mobileBottomSheet = ref<'none' | 'booking' | 'booking-detail'>('none')
+    const mobileDetailReservation = ref<ReservationWithDetails | null>(null)
+
     // --- HELPERS ---
     function getCurrentTimeValue(): number {
         const now = new Date()
@@ -207,6 +212,13 @@ export const useDashboardStore = defineStore('dashboard', () => {
         rightSidebarTab.value = tab
     }
 
+    // Mobile actions
+    function openMobileMenu() { mobileMenuOpen.value = true }
+    function closeMobileMenu() { mobileMenuOpen.value = false }
+    function openBottomSheet(sheet: 'booking' | 'booking-detail') { mobileBottomSheet.value = sheet }
+    function closeBottomSheet() { mobileBottomSheet.value = 'none' }
+    function setMobileDetailReservation(res: ReservationWithDetails | null) { mobileDetailReservation.value = res }
+
     // Загрузка данных с сервера
     async function fetchData(date: Date) {
         if (!currentRestaurant.value?.slug) return
@@ -278,6 +290,9 @@ export const useDashboardStore = defineStore('dashboard', () => {
         rightSidebarTab.value = 'booking'
         error.value = null
         viewTimeValue.value = getCurrentTimeValue()
+        mobileMenuOpen.value = false
+        mobileBottomSheet.value = 'none'
+        mobileDetailReservation.value = null
     }
 
     return {
@@ -293,6 +308,9 @@ export const useDashboardStore = defineStore('dashboard', () => {
         tableFilter,
         viewMode,
         rightSidebarTab,
+        mobileMenuOpen,
+        mobileBottomSheet,
+        mobileDetailReservation,
 
         // Getters
         viewTime,
@@ -311,6 +329,11 @@ export const useDashboardStore = defineStore('dashboard', () => {
         setTableFilter,
         setViewMode,
         setRightSidebarTab,
+        openMobileMenu,
+        closeMobileMenu,
+        openBottomSheet,
+        closeBottomSheet,
+        setMobileDetailReservation,
         fetchData,
         refreshTableStatuses,
         $reset,

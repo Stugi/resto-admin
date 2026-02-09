@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const store = useDashboardStore()
 const currentTime = ref("--:--")
 
 const { formattedDate, nextDay, prevDay } = useDashboardDate()
@@ -17,7 +18,7 @@ onMounted(() => {
 
 <template>
     <header
-        class="h-header bg-surface border-b border-white-5 flex items-center justify-between px-6 shrink-0 z-50"
+        class="h-header bg-surface border-b border-white-5 flex items-center justify-between px-4 lg:px-6 shrink-0 z-50"
     >
         <!-- ЛЕВАЯ ЧАСТЬ: Логотип -->
         <div class="flex items-center gap-4 cursor-default">
@@ -32,8 +33,8 @@ onMounted(() => {
             </h1>
         </div>
 
-        <!-- ЦЕНТР: Навигация по дате и Время -->
-        <div class="flex items-center gap-10">
+        <!-- ЦЕНТР: Навигация по дате и Время (только десктоп) -->
+        <div class="hidden lg:flex items-center gap-10">
             <!-- Дата -->
             <div class="flex items-center gap-4 bg-bg px-4 py-2 rounded-xl border border-white-5">
                 <button
@@ -64,8 +65,8 @@ onMounted(() => {
             </time>
         </div>
 
-        <!-- ПРАВАЯ ЧАСТЬ: Профиль -->
-        <div class="flex items-center gap-4">
+        <!-- ПРАВАЯ ЧАСТЬ: Профиль (только десктоп) -->
+        <div class="hidden lg:flex items-center gap-4">
             <div
                 class="flex items-center gap-3 p-1.5 pr-4 bg-surface-light border border-white-5 rounded-2xl hover:border-brand/30 transition-all cursor-pointer group"
             >
@@ -89,5 +90,13 @@ onMounted(() => {
                 </div>
             </div>
         </div>
+
+        <!-- ГАМБУРГЕР: только мобайл -->
+        <button
+            class="flex lg:hidden w-10 h-10 bg-surface-light border border-white-5 rounded-xl items-center justify-center cursor-pointer"
+            @click="store.openMobileMenu()"
+        >
+            <Icon name="lucide:menu" class="w-5 h-5" />
+        </button>
     </header>
 </template>

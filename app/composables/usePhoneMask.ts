@@ -1,4 +1,28 @@
 /**
+ * Форматирует строку цифр в маску +7 (XXX) XXX-XX-XX
+ * Экспортируется отдельно для использования в компонентах (отображение телефона)
+ */
+export function formatPhone(digits: string): string {
+    // Убираем всё кроме цифр
+    digits = digits.replace(/\D/g, '')
+    // Всегда начинаем с 7
+    if (!digits.startsWith('7')) {
+        digits = '7' + digits
+    }
+    // Обрезаем до 11 цифр
+    digits = digits.slice(0, 11)
+
+    let result = '+7'
+    if (digits.length > 1) result += ' (' + digits.slice(1, 4)
+    if (digits.length >= 4) result += ')'
+    if (digits.length > 4) result += ' ' + digits.slice(4, 7)
+    if (digits.length > 7) result += '-' + digits.slice(7, 9)
+    if (digits.length > 9) result += '-' + digits.slice(9, 11)
+
+    return result
+}
+
+/**
  * 🎓 Composable для маски телефона +7 (___) ___-__-__
  *
  * Форматирует ввод пользователя в маску на лету.
@@ -27,27 +51,6 @@ export function usePhoneMask() {
         if (digits.length < 11) return 'Введите номер полностью'
         return ''
     })
-
-    /**
-     * Форматирует строку цифр в маску +7 (XXX) XXX-XX-XX
-     */
-    function formatPhone(digits: string): string {
-        // Всегда начинаем с 7
-        if (!digits.startsWith('7')) {
-            digits = '7' + digits
-        }
-        // Обрезаем до 11 цифр
-        digits = digits.slice(0, 11)
-
-        let result = '+7'
-        if (digits.length > 1) result += ' (' + digits.slice(1, 4)
-        if (digits.length >= 4) result += ')'
-        if (digits.length > 4) result += ' ' + digits.slice(4, 7)
-        if (digits.length > 7) result += '-' + digits.slice(7, 9)
-        if (digits.length > 9) result += '-' + digits.slice(9, 11)
-
-        return result
-    }
 
     /**
      * Обработчик @input для инпута телефона.

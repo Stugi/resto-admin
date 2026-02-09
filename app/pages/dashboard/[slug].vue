@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ZoneElement } from '~~/types'
+import type { ZoneElement, ReservationWithDetails } from '~~/types'
 
 /**
  * 🎓 NUXT + TS — Страница дашборда ресторана
@@ -10,11 +10,13 @@ import type { ZoneElement } from '~~/types'
  * 3. Route params — динамические параметры из URL ([slug])
  * 4. watch() — реактивное отслеживание изменений
  * 5. await в <script setup> — SSR-совместимая загрузка данных
+ * 6. useBreakpoint — адаптивный layout: mobile (<lg) vs desktop (>=lg)
  */
 
 const store = useDashboardStore()
 const { selectedDate } = useDashboardDate()
 const { showToast } = useToast()
+const { isDesktop } = useBreakpoint()
 
 /**
  * 🎓 Типизированный роут благодаря experimental.typedPages
@@ -60,6 +62,19 @@ const handleSuccess = async () => {
     showToast("Бронирование создано!", "success")
 }
 
+// ============ MOBILE HANDLERS ============
+
+const handleOpenDetail = (res: ReservationWithDetails) => {
+    store.setMobileDetailReservation(res)
+    store.openBottomSheet('booking-detail')
+}
+
+const handleMobileBookingSuccess = async () => {
+    store.closeBottomSheet()
+    await store.fetchData(selectedDate.value)
+    showToast("Бронирование создано!", "success")
+}
+
 // ============ WATCHERS ============
 
 // 🎓 watch() — реактивно следит за изменением selectedDate
@@ -90,80 +105,119 @@ definePageMeta({
 </script>
 <template>
     <div class="flex flex-col h-full">
-        <TimeSlider />
-        <div class="flex h-full overflow-hidden">
-            <!-- 1. ЛЕВАЯ ПАНЕЛЬ — Новый сайдбар со списком столов -->
-            <aside class="w-sidebar border-r border-white-5 flex flex-col shrink-0 bg-bg">
-                <DashboardSidebar />
-            </aside>
+        <!-- ===== ДЕСКТОП ЛЕЙАУТ (>= lg) ===== -->
+        <template v-if="isDesktop">
+            <TimeSlider />
+            <div class="flex h-full overflow-hidden">
+                <!-- 1. ЛЕВАЯ ПАНЕЛЬ — Сайдбар со списком столов -->
+                <aside class="w-sidebar border-r border-white-5 flex flex-col shrink-0 bg-bg">
+                    <DashboardSidebar />
+                </aside>
 
-            <!-- 2. ЦЕНТРАЛЬНАЯ ЧАСТЬ -->
-            <main class="flex-1 flex flex-col min-w-0">
-                <!-- Header с табами зон -->
-                <div class="flex items-center justify-between px-6 py-4 border-b border-white-5 bg-bg">
-                    <!--
-                        🎓 Передаём props в компонент:
-                        - :zones — реактивная привязка массива зон из store
-                        - :active-zone-id — kebab-case в template = camelCase в props
-                        - @change — слушаем событие 'change' от компонента
-                    -->
-                    <ZoneTabs
-                        :zones="store.zones"
-                        :active-zone-id="store.activeZoneId"
-                        @change="handleZoneChange"
-                    />
+                <!-- 2. ЦЕНТРАЛЬНАЯ ЧАСТЬ -->
+                <main class="flex-1 flex flex-col min-w-0">
+                    <!-- Header с табами зон -->
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-white-5 bg-bg">
+                        <ZoneTabs
+                            :zones="store.zones"
+                            :active-zone-id="store.activeZoneId"
+                            @change="handleZoneChange"
+                        />
 
-                    <!-- Кнопки управления видом -->
-                    <div class="flex gap-1 p-1 bg-surface rounded-lg border border-white-5">
-                        <button
-                            class="view-btn"
-                            :class="{ 'is-active': store.viewMode === 'grid' }"
-                            title="Карточки"
-                            @click="store.setViewMode('grid')"
-                        >
-                            <Icon name="lucide:layout-grid" class="w-4 h-4" />
-                        </button>
-                        <button
-                            class="view-btn"
-                            :class="{ 'is-active': store.viewMode === 'schema' }"
-                            title="Схема зала"
-                            @click="store.setViewMode('schema')"
-                        >
-                            <Icon name="lucide:map" class="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Карта столов -->
-                <div class="flex-1 overflow-hidden p-safe">
-                    <!-- Индикатор загрузки -->
-                    <div v-if="store.isLoading" class="flex items-center justify-center h-full">
-                        <div class="animate-spin w-8 h-8 border-2 border-brand border-t-transparent rounded-full"></div>
+                        <!-- Кнопки управления видом -->
+                        <div class="flex gap-1 p-1 bg-surface rounded-lg border border-white-5">
+                            <button
+                                class="view-btn"
+                                :class="{ 'is-active': store.viewMode === 'grid' }"
+                                title="Карточки"
+                                @click="store.setViewMode('grid')"
+                            >
+                                <Icon name="lucide:layout-grid" class="w-4 h-4" />
+                            </button>
+                            <button
+                                class="view-btn"
+                                :class="{ 'is-active': store.viewMode === 'schema' }"
+                                title="Схема зала"
+                                @click="store.setViewMode('schema')"
+                            >
+                                <Icon name="lucide:map" class="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Grid вид (карточки) -->
-                    <div v-else-if="store.viewMode === 'grid'" class="h-full overflow-y-auto scrollbar-thin p-1">
-                        <TableMap
+                    <!-- Карта столов -->
+                    <div class="flex-1 overflow-hidden p-safe">
+                        <!-- Индикатор загрузки -->
+                        <div v-if="store.isLoading" class="flex items-center justify-center h-full">
+                            <div class="animate-spin w-8 h-8 border-2 border-brand border-t-transparent rounded-full"></div>
+                        </div>
+
+                        <!-- Grid вид (карточки) -->
+                        <div v-else-if="store.viewMode === 'grid'" class="h-full overflow-y-auto scrollbar-thin p-1">
+                            <TableMap
+                                :tables="store.currentZone?.tables || []"
+                                :selected-table-id="store.selectedTableId"
+                                @selectTable="handleSelectTable"
+                            />
+                        </div>
+
+                        <!-- Schema вид (схема зала) -->
+                        <FloorSchema
+                            v-else
                             :tables="store.currentZone?.tables || []"
+                            :elements="(store.currentZone?.elements as ZoneElement[]) || []"
                             :selected-table-id="store.selectedTableId"
                             @selectTable="handleSelectTable"
                         />
                     </div>
+                </main>
 
-                    <!-- Schema вид (схема зала) -->
-                    <FloorSchema
-                        v-else
-                        :tables="store.currentZone?.tables || []"
-                        :elements="(store.currentZone?.elements as ZoneElement[]) || []"
-                        :selected-table-id="store.selectedTableId"
-                        @selectTable="handleSelectTable"
-                    />
+                <!-- 3. ПРАВАЯ ПАНЕЛЬ -->
+                <DashboardRightSidebar @success="handleSuccess" />
+            </div>
+        </template>
+
+        <!-- ===== МОБАЙЛ ЛЕЙАУТ (< lg) ===== -->
+        <template v-else>
+            <MobileDateScroller />
+            <MobileStatsBar />
+
+            <!-- Основной контент — список бронирований -->
+            <div class="flex-1 overflow-y-auto">
+                <!-- Индикатор загрузки -->
+                <div v-if="store.isLoading" class="flex items-center justify-center h-64">
+                    <div class="animate-spin w-8 h-8 border-2 border-brand border-t-transparent rounded-full"></div>
                 </div>
-            </main>
 
-            <!-- 3. ПРАВАЯ ПАНЕЛЬ -->
-            <DashboardRightSidebar @success="handleSuccess" />
-        </div>
+                <MobileBookingList
+                    v-else
+                    :reservations="store.reservations"
+                    @open-detail="handleOpenDetail"
+                />
+            </div>
+
+            <!-- Фиксированная кнопка снизу -->
+            <MobileBottomBar />
+
+            <!-- Bottom sheet: новое бронирование -->
+            <MobileBottomSheet
+                :is-open="store.mobileBottomSheet === 'booking'"
+                title="Новое бронирование"
+                @close="store.closeBottomSheet()"
+            >
+                <MobileBookingForm @success="handleMobileBookingSuccess" />
+            </MobileBottomSheet>
+
+            <!-- Bottom sheet: детали бронирования -->
+            <MobileBookingDetailSheet
+                :reservation="store.mobileDetailReservation"
+                :is-open="store.mobileBottomSheet === 'booking-detail'"
+                @close="store.closeBottomSheet()"
+            />
+
+            <!-- Drawer: меню навигации -->
+            <MobileMenuDrawer />
+        </template>
     </div>
 </template>
 

@@ -157,6 +157,7 @@ const handleFormSubmit = async () => {
                 guestPhone: rawPhone.value,
                 startTime: form.startTime,
                 peopleCount: form.peopleCount,
+                comment: form.comment.trim() || undefined,
             },
         })
 
