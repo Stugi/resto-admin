@@ -6,8 +6,8 @@
   Разные стили для разных типов (кухня, бар, растения, VIP-зона)
 -->
 <script setup lang="ts">
-import type { ZoneElement } from '~~/types'
-import { getElementConfig } from '~/constants/floorElements'
+import type { ZoneElement } from "~~/types"
+import { getElementConfig } from "~/constants/floorElements"
 
 interface Props {
     element: ZoneElement
@@ -42,22 +42,28 @@ const sizeStyle = computed(() => {
 /**
  * Зоны-оверлеи рендерятся как полупрозрачные области с лейблом
  */
-const isZone = computed(() =>
-    props.element.type === 'vip_zone' || props.element.type === 'terrace_zone'
+const isZone = computed(
+    () => props.element.type === "vip_zone" || props.element.type === "terrace_zone",
 )
 
 /**
  * Стены рендерятся без иконки
  */
-const isWall = computed(() =>
-    props.element.type === 'wall_h' || props.element.type === 'wall_v'
-)
+const isWall = computed(() => props.element.type === "wall_h" || props.element.type === "wall_v")
 </script>
 
 <template>
     <div
         class="floor-element"
-        :class="[config.bgColor, { 'is-zone': isZone, 'is-wall': isWall }]"
+        :class="[
+            config.bgColor,
+            {
+                'is-zone': isZone,
+                'is-wall': isWall,
+                'zone-vip': element.type === 'vip_zone',
+                'zone-window': element.type === 'terrace_zone',
+            },
+        ]"
         :style="[positionStyle, sizeStyle]"
     >
         <!-- VIP-зона: только лейбл в углу -->
@@ -75,7 +81,12 @@ const isWall = computed(() =>
 
         <!-- Обычный элемент: иконка + лейбл -->
         <template v-else>
-            <Icon :name="config.icon" class="element-icon" :class="config.textColor" />
+            <Icon
+                :name="config.icon"
+                class="element-icon"
+                :class="config.textColor"
+                :size="config.iconSize ?? 16"
+            />
             <span v-if="element.label" class="element-label">
                 {{ element.label }}
             </span>
@@ -96,40 +107,43 @@ const isWall = computed(() =>
     transition: all var(--duration-fast) var(--ease-out);
 }
 
-/* Зоны-оверлеи — большая область */
+/* Зоны-оверлеи — только пунктирная рамка, БЕЗ фона */
 .floor-element.is-zone {
     border: 2px dashed var(--color-white-10);
     border-radius: var(--radius-xl);
+    background: transparent;
 }
 
-/* VIP-зона — золотая рамка */
-.floor-element.is-zone.bg-brand\/5 {
-    border-color: color-mix(in srgb, var(--color-brand) 30%, transparent);
+/* VIP-зона — золотая пунктирная рамка */
+.floor-element.is-zone.zone-vip {
+    border: 2px dashed var(--color-brand);
 }
 
+/* Зона у окна — голубая пунктирная рамка */
+.floor-element.is-zone.zone-window {
+    border: 2px dashed var(--color-sky);
+}
+
+/* Лейбл зоны — сидит на рамке и «разрывает» её фоном */
 .zone-label {
     position: absolute;
-    top: 8px;
-    left: 8px;
+    top: -9px;
+    left: 12px;
     display: flex;
     align-items: center;
     gap: 4px;
+    padding: 0 6px;
+    background: var(--color-bg);
     font-size: var(--font-size-2xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-wide);
-    opacity: 0.8;
+    line-height: 1;
 }
 
 /* Стена — просто линия */
 .floor-element.is-wall {
     border-radius: 2px;
-}
-
-/* Обычные элементы */
-.element-icon {
-    width: 1.25rem;
-    height: 1.25rem;
 }
 
 .element-label {

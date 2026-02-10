@@ -90,6 +90,7 @@ model Table {
   zone     Zone   @relation(fields: [zoneId], references: [id])
   name     String // Например, "14" или "VIP-1"
   capacity Int
+  shape    String? // 'round' | 'square' | 'rect'
 
   // Позиция на схеме зала (в процентах 0-100)
   posX Float? @map("pos_x")

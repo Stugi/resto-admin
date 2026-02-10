@@ -1,12 +1,13 @@
 <!-- app/components/floor-map/TableOnSchema.vue -->
 <!--
-  🎓 Стол на схеме зала
+  Стол на схеме зала
 
   Позиционируется абсолютно через posX/posY (в процентах)
   Показывает: номер, статус (цвет), вместимость
+  Формы: round (круг), square (квадрат), rect (прямоугольник)
 -->
 <script setup lang="ts">
-import type { TableWithStatus } from '~~/types'
+import type { TableWithStatus, TableShape } from '~~/types'
 import { getStatusConfig } from '~/constants/tableStatuses'
 
 interface Props {
@@ -23,7 +24,7 @@ const emit = defineEmits<{
 }>()
 
 /**
- * 🎓 Позиция стола на схеме
+ * Позиция стола на схеме
  * transform: translate(-50%, -50%) центрирует элемент относительно точки
  */
 const positionStyle = computed(() => ({
@@ -32,7 +33,7 @@ const positionStyle = computed(() => ({
 }))
 
 /**
- * 🎓 Размер стола зависит от вместимости
+ * Размер стола зависит от вместимости
  */
 const sizeClass = computed(() => {
     const cap = props.table.capacity
@@ -42,13 +43,28 @@ const sizeClass = computed(() => {
     return 'table-sm'
 })
 
+/**
+ * Форма стола: round (круг), square (квадрат), rect (прямоугольник)
+ * Если shape не задан в БД — определяем по вместимости
+ */
+function getDefaultShape(capacity: number): TableShape {
+    if (capacity <= 2) return 'round'
+    if (capacity <= 5) return 'square'
+    return 'rect'
+}
+
+const shapeClass = computed(() => {
+    const shape = (props.table.shape as TableShape) ?? getDefaultShape(props.table.capacity)
+    return `shape-${shape}`
+})
+
 const statusConfig = computed(() => getStatusConfig(props.table.status))
 </script>
 
 <template>
     <button
         class="table-on-schema"
-        :class="[sizeClass, { 'is-selected': isSelected }]"
+        :class="[sizeClass, shapeClass, { 'is-selected': isSelected }]"
         :style="positionStyle"
         @click="emit('click', table.id)"
     >
@@ -71,7 +87,6 @@ const statusConfig = computed(() => getStatusConfig(props.table.status))
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: var(--radius-lg);
     background: var(--color-surface-light);
     border: 2px solid var(--color-white-5);
     cursor: pointer;
@@ -91,49 +106,61 @@ const statusConfig = computed(() => getStatusConfig(props.table.status))
     z-index: 10;
 }
 
-/* Размеры столов */
+/* Формы столов */
+.shape-round {
+    border-radius: var(--radius-full); /* 50% — круг */
+}
+
+.shape-square {
+    border-radius: var(--radius-lg); /* скруглённый квадрат */
+}
+
+.shape-rect {
+    border-radius: var(--radius-xl); /* прямоугольник со скруглением */
+}
+
+/* Размеры столов (пропорционально вместимости) */
 .table-sm {
-    width: 3rem;
-    height: 3rem;
-}
-
-.table-md {
-    width: 4rem;
-    height: 4rem;
-}
-
-.table-lg {
     width: 5rem;
     height: 5rem;
 }
 
-.table-xl {
+.table-md {
     width: 6rem;
-    height: 4rem;
-    border-radius: var(--radius-xl);
+    height: 6rem;
+}
+
+.table-lg {
+    width: 7rem;
+    height: 7rem;
+}
+
+.table-xl {
+    width: 10rem;
+    height: 6rem;
 }
 
 /* Статус-индикатор */
 .status-ring {
     position: absolute;
-    top: -4px;
-    right: -4px;
-    width: 12px;
-    height: 12px;
+    top: -5px;
+    right: -5px;
+    width: 14px;
+    height: 14px;
     border-radius: var(--radius-full);
     border: 2px solid var(--color-surface);
 }
 
 /* Номер стола */
 .table-name {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     font-weight: 700;
     color: white;
 }
 
 /* Вместимость */
 .table-capacity {
-    font-size: var(--font-size-2xs);
+    font-size: var(--font-size-xs);
     color: var(--color-muted);
 }
 </style>

@@ -13,6 +13,7 @@ interface ElementConfig {
     bgColor: string         // Tailwind класс фона
     textColor: string       // Tailwind класс текста
     zIndex: number          // Слой (VIP-зоны ниже столов)
+    iconSize?: number       // Размер иконки (px)
 }
 
 export const FLOOR_ELEMENTS: Record<ElementType, ElementConfig> = {
@@ -25,6 +26,7 @@ export const FLOOR_ELEMENTS: Record<ElementType, ElementConfig> = {
         bgColor: 'bg-orange-500/20',
         textColor: 'text-orange-400',
         zIndex: 5,
+        iconSize: 20,
     },
     bar: {
         icon: 'lucide:wine',
@@ -34,6 +36,7 @@ export const FLOOR_ELEMENTS: Record<ElementType, ElementConfig> = {
         bgColor: 'bg-amber-500/20',
         textColor: 'text-amber-400',
         zIndex: 5,
+        iconSize: 20,
     },
     entrance: {
         icon: 'lucide:door-open',
@@ -43,6 +46,7 @@ export const FLOOR_ELEMENTS: Record<ElementType, ElementConfig> = {
         bgColor: 'bg-blue-500/20',
         textColor: 'text-blue-400',
         zIndex: 5,
+        iconSize: 20,
     },
     toilet: {
         icon: 'lucide:bath',
@@ -52,6 +56,7 @@ export const FLOOR_ELEMENTS: Record<ElementType, ElementConfig> = {
         bgColor: 'bg-cyan-500/20',
         textColor: 'text-cyan-400',
         zIndex: 5,
+        iconSize: 20,
     },
     hostess: {
         icon: 'lucide:user-circle',
@@ -61,6 +66,7 @@ export const FLOOR_ELEMENTS: Record<ElementType, ElementConfig> = {
         bgColor: 'bg-pink-500/20',
         textColor: 'text-pink-400',
         zIndex: 5,
+        iconSize: 20,
     },
 
     // Декор
@@ -72,6 +78,7 @@ export const FLOOR_ELEMENTS: Record<ElementType, ElementConfig> = {
         bgColor: 'bg-green-500/20',
         textColor: 'text-green-400',
         zIndex: 4,
+        iconSize: 20,
     },
 
     // Архитектура
@@ -110,15 +117,16 @@ export const FLOOR_ELEMENTS: Record<ElementType, ElementConfig> = {
         bgColor: 'bg-sky-400/30',
         textColor: 'text-sky-300',
         zIndex: 2,
+        iconSize: 12,
     },
 
     // Зоны
     vip_zone: {
         icon: 'lucide:star',
         label: 'VIP-зона',
-        defaultWidth: 150,
-        defaultHeight: 150,
-        bgColor: 'bg-brand/5',
+        defaultWidth: 180,
+        defaultHeight: 200,
+        bgColor: '',
         textColor: 'text-brand',
         zIndex: 1, // Ниже всех — это фон
     },
@@ -126,8 +134,8 @@ export const FLOOR_ELEMENTS: Record<ElementType, ElementConfig> = {
         icon: 'lucide:sun',
         label: 'У окна',
         defaultWidth: 100,
-        defaultHeight: 300,
-        bgColor: 'bg-sky-400/5',
+        defaultHeight: 340,
+        bgColor: '',
         textColor: 'text-sky-300',
         zIndex: 1,
     },

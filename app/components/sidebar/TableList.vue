@@ -14,7 +14,7 @@
 -->
 <script setup lang="ts">
 import type { TableFilter } from "~/stores/dashboard"
-import { TABLE_STATUSES } from '~/constants/tableStatuses'
+import { TABLE_STATUSES } from "~/constants/tableStatuses"
 
 const store = useDashboardStore()
 
@@ -48,8 +48,8 @@ const handleTableClick = (tableId: string) => {
                 @click="store.setTableFilter(tab.key)"
             >
                 <!-- Цветной индикатор статуса -->
-                <span v-if="tab.color" class="w-1.5 h-1.5 rounded-full" :class="tab.color" />
-                {{ tab.label }}
+                <span v-if="tab.color" class="w-2 h-2 rounded-full" :class="tab.color" />
+                <span class="text-2xs font-medium" v-else>{{ tab.label }}</span>
             </button>
         </div>
 
@@ -86,10 +86,6 @@ const handleTableClick = (tableId: string) => {
 .filter-tabs {
     display: flex;
     gap: 4px;
-    padding: 4px;
-    background: var(--color-surface);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--color-white-5);
     flex-wrap: wrap;
 }
 

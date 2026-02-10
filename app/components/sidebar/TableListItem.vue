@@ -79,12 +79,16 @@ const nearestBooking = computed(() => getNearestBooking(props.table.reservations
 
         <!-- Строка 2: ближайшая бронь -->
         <ClientOnly>
-            <div v-if="nearestBooking" class="row-bottom">
-                <span class="booking-guest">{{ nearestBooking.guestName }}</span>
-                <span class="divider">·</span>
-                <span class="booking-phone">{{ formatPhone(nearestBooking.guestPhone) }}</span>
-                <span class="divider">·</span>
-                <span class="booking-time">{{ nearestBooking.startTime }}</span>
+            <div v-if="nearestBooking" class="flex flex-col gap-1">
+                <div class="flex items-center gap-1">
+                    <span class="booking-guest">{{ nearestBooking.guestName }}</span>
+                    <span class="divider">·</span>
+
+                    <span class="booking-time">{{ nearestBooking.startTime }}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="booking-phone">{{ formatPhone(nearestBooking.guestPhone) }}</span>
+                </div>
             </div>
         </ClientOnly>
     </button>
@@ -199,13 +203,12 @@ const nearestBooking = computed(() => getNearestBooking(props.table.reservations
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 7rem;
+    max-width: 10rem;
 }
 
 .booking-phone {
     font-weight: 500;
     color: var(--color-muted);
     white-space: nowrap;
-    font-size: var(--font-size-2xs);
 }
 </style>

@@ -42,6 +42,9 @@ export interface ZoneElement {
 // Определяем возможные статусы
 export type TableStatus = 'free' | 'busy' | 'reserved'
 
+// Формы столов на схеме зала
+export type TableShape = 'round' | 'square' | 'rect'
+
 // Расширяем стандартный тип стола из Prisma
 export interface TableWithStatus extends Table {
     status: TableStatus
