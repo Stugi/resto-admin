@@ -1,5 +1,5 @@
 import { ZoneWithTables, TableStatus } from '~~/types'
-import { startOfDay, endOfDay, addHours } from 'date-fns'
+import { startOfDay, endOfDay, addHours, addMinutes } from 'date-fns'
 import { z } from 'zod'
 
 const querySchema = z.object({
@@ -18,6 +18,7 @@ export default defineEventHandler(async (event): Promise<ZoneWithTables[]> => {
     const comparisonTime = parseViewTime(targetDate, viewTime)
 
     const soonLimit = addHours(comparisonTime, 2)
+    const soonThreshold = addMinutes(comparisonTime, 30) // Порог «скоро освободится» — 30 мин
 
     const zones = await prisma.zone.findMany({
         where: {
@@ -57,7 +58,12 @@ export default defineEventHandler(async (event): Promise<ZoneWithTables[]> => {
 
             let status: TableStatus = 'free'
             if (currentBooking) {
-                status = 'busy'
+                // Если до конца брони осталось ≤ 30 мин — «скоро освободится»
+                if (currentBooking.endTime <= soonThreshold) {
+                    status = 'soon'
+                } else {
+                    status = 'busy'
+                }
             } else if (upcomingBooking) {
                 status = 'reserved'
             }

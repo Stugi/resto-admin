@@ -6,6 +6,8 @@
  * - Включает выбор стола (на десктопе стол выбирается на схеме)
  * - Порядок: гости → время → стол → контакт
  */
+import { BOOKING_DURATION_HOURS } from '~/constants/workingHours'
+
 const store = useDashboardStore()
 const { showToast } = useToast()
 
@@ -59,7 +61,7 @@ const availableTables = computed(() => {
             const resStart = new Date(res.startTime)
             const resEnd = new Date(res.endTime)
             const slotStart = hours!
-            const slotEnd = slotStart + 2
+            const slotEnd = slotStart + BOOKING_DURATION_HOURS
             const resStartH = resStart.getHours() + resStart.getMinutes() / 60
             const resEndH = resEnd.getHours() + resEnd.getMinutes() / 60
             return res.tableId === table.id && slotStart < resEndH && slotEnd > resStartH

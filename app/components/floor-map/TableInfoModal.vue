@@ -7,10 +7,13 @@
   - Свободный: «Стол свободен» + кнопка «Создать бронь» + следующая бронь
 -->
 <script setup lang="ts">
-import type { TableWithStatus } from '~~/types'
-import { getStatusConfig } from '~/constants/tableStatuses'
-import { formatPhone } from '~/composables/usePhoneMask'
-import { format } from 'date-fns'
+import type { TableWithStatus } from "~~/types"
+import { getStatusConfig } from "~/constants/tableStatuses"
+import { formatPhone } from "~/composables/usePhoneMask"
+import { format, isToday } from "date-fns"
+
+const store = useDashboardStore()
+const { selectedDate } = useDashboardDate()
 
 interface Props {
     table: TableWithStatus | null
@@ -21,9 +24,10 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-    (e: 'close'): void
-    (e: 'create-booking'): void
-    (e: 'edit-booking'): void
+    (e: "close"): void
+    (e: "create-booking"): void
+    (e: "edit-booking"): void
+    (e: "seat-guests"): void
 }>()
 
 /** Статус-конфиг стола */
@@ -36,64 +40,96 @@ const statusConfig = computed(() => {
 const activeReservation = computed(() => {
     if (!props.table?.reservations?.length) return null
     const now = new Date()
-    return props.table.reservations.find(r => {
-        const start = new Date(r.startTime)
-        const end = new Date(r.endTime)
-        return now >= start && now <= end
-    }) ?? props.table.reservations[0] ?? null
+    return (
+        props.table.reservations.find((r) => {
+            const start = new Date(r.startTime)
+            const end = new Date(r.endTime)
+            return now >= start && now <= end
+        }) ??
+        props.table.reservations[0] ??
+        null
+    )
 })
 
-/** Ближайшая будущая бронь (для свободных столов) */
+/** Ближайшая будущая бронь (только для свободных столов на сегодня) */
 const nextReservation = computed(() => {
     if (!props.table?.reservations?.length) return null
-    if (props.table.status !== 'free') return null
-    const now = new Date()
-    return props.table.reservations
-        .filter(r => new Date(r.startTime) > now)
-        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0] ?? null
+    if (props.table.status !== "free") return null
+    if (!isToday(selectedDate.value)) return null
+
+    // Сравниваем с viewTime (время просмотра на слайдере), а не с реальным now
+    const viewDate = new Date(selectedDate.value)
+    const viewHours = Math.floor(store.viewTimeValue)
+    const viewMinutes = Math.round((store.viewTimeValue - viewHours) * 60)
+    viewDate.setHours(viewHours, viewMinutes, 0, 0)
+
+    return (
+        props.table.reservations
+            .filter((r) => new Date(r.startTime) > viewDate)
+            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0] ??
+        null
+    )
 })
 
 /** Свободен ли стол */
-const isFree = computed(() => props.table?.status === 'free')
+const isFree = computed(() => props.table?.status === "free")
+
+/** Забронирован (гости ещё не пришли) */
+const isReserved = computed(() => props.table?.status === "reserved")
+
+/** Посадить гостей (confirmed → seated) */
+const isSeating = ref(false)
+const { showToast } = useToast()
+
+async function seatGuests() {
+    if (!activeReservation.value) return
+    isSeating.value = true
+    try {
+        await $fetch(`/api/reservations/${activeReservation.value.id}`, {
+            method: "PATCH",
+            body: { status: "seated" }
+        })
+        await refreshNuxtData()
+        showToast("Гости посажены за стол", "success")
+        emit("close")
+    } catch (e: any) {
+        showToast(e.data?.message || "Ошибка обновления статуса", "error")
+    } finally {
+        isSeating.value = false
+    }
+}
 
 /** Инициалы гостя */
 const initials = computed(() => {
-    if (!activeReservation.value) return ''
+    if (!activeReservation.value) return ""
     const name = activeReservation.value.guest.name
-    const parts = name.split(' ')
-    const first = parts[0]?.charAt(0) ?? ''
-    const second = parts[1]?.charAt(0) ?? ''
+    const parts = name.split(" ")
+    const first = parts[0]?.charAt(0) ?? ""
+    const second = parts[1]?.charAt(0) ?? ""
     if (first && second) return (first + second).toUpperCase()
     return name.substring(0, 2).toUpperCase()
 })
 
 /** Время окончания брони для статуса */
 const statusTimeText = computed(() => {
-    if (!activeReservation.value) return ''
+    if (!activeReservation.value) return ""
     const end = new Date(activeReservation.value.endTime)
-    const endStr = format(end, 'HH:mm')
-    if ((props.table?.status as string) === 'soon') return `освободится ~${endStr}`
+    const endStr = format(end, "HH:mm")
+    if ((props.table?.status as string) === "soon") return `освободится ~${endStr}`
     return `до ${endStr}`
 })
 
 /** Склонение «человек» */
 function guestWord(count: number): string {
-    if (count === 1) return 'человек'
-    if (count >= 2 && count <= 4) return 'человека'
-    return 'человек'
-}
-
-/** Позвонить гостю */
-function callGuest() {
-    if (activeReservation.value?.guest.phone) {
-        window.location.href = `tel:${activeReservation.value.guest.phone.replace(/[^+\d]/g, '')}`
-    }
+    if (count === 1) return "человек"
+    if (count >= 2 && count <= 4) return "человека"
+    return "человек"
 }
 
 /** Закрыть по клику на overlay */
 function handleOverlayClick(e: MouseEvent) {
     if (e.target === e.currentTarget) {
-        emit('close')
+        emit("close")
     }
 }
 </script>
@@ -101,11 +137,7 @@ function handleOverlayClick(e: MouseEvent) {
 <template>
     <Teleport to="body">
         <Transition name="modal">
-            <div
-                v-if="isOpen && table"
-                class="modal-overlay"
-                @click="handleOverlayClick"
-            >
+            <div v-if="isOpen && table" class="modal-overlay" @click="handleOverlayClick">
                 <div class="modal-card" @click.stop>
                     <!-- Заголовок -->
                     <div class="modal-header">
@@ -114,9 +146,7 @@ function handleOverlayClick(e: MouseEvent) {
                                 {{ table.name }}
                             </span>
                             <div>
-                                <h3 class="text-lg font-bold text-white">
-                                    Стол №{{ table.name }}
-                                </h3>
+                                <h3 class="text-lg font-bold text-white">Стол №{{ table.name }}</h3>
                                 <p class="text-xs text-muted">
                                     {{ zoneName }} · {{ table.capacity }} мест
                                 </p>
@@ -129,10 +159,7 @@ function handleOverlayClick(e: MouseEvent) {
 
                     <!-- Статус -->
                     <div class="status-row">
-                        <span
-                            class="status-badge"
-                            :class="statusConfig?.color"
-                        >
+                        <span class="status-badge" :class="statusConfig?.color">
                             {{ statusConfig?.label }}
                         </span>
                         <span v-if="statusTimeText" class="text-xs text-muted">
@@ -168,15 +195,16 @@ function handleOverlayClick(e: MouseEvent) {
                                 <Icon name="lucide:users" class="w-4 h-4 text-muted" />
                                 <span class="text-sm text-muted">Гостей:</span>
                                 <span class="text-sm font-semibold text-white ml-auto">
-                                    {{ activeReservation.peopleCount }} {{ guestWord(activeReservation.peopleCount) }}
+                                    {{ activeReservation.peopleCount }}
+                                    {{ guestWord(activeReservation.peopleCount) }}
                                 </span>
                             </div>
                             <div class="detail-row">
                                 <Icon name="lucide:clock" class="w-4 h-4 text-muted" />
                                 <span class="text-sm text-muted">Время:</span>
                                 <span class="text-sm font-semibold text-white ml-auto">
-                                    {{ format(new Date(activeReservation.startTime), 'HH:mm') }} —
-                                    {{ format(new Date(activeReservation.endTime), 'HH:mm') }}
+                                    {{ format(new Date(activeReservation.startTime), "HH:mm") }} —
+                                    {{ format(new Date(activeReservation.endTime), "HH:mm") }}
                                 </span>
                             </div>
                             <div v-if="activeReservation.comment" class="detail-row">
@@ -190,12 +218,16 @@ function handleOverlayClick(e: MouseEvent) {
 
                         <!-- Кнопки действий -->
                         <div class="actions-row">
-                            <button class="action-btn action-call" @click="callGuest">
-                                <Icon name="lucide:phone" class="w-4 h-4" />
-                                Позвонить
+                            <!-- Кнопка «Гости пришли» — только для забронированных столов -->
+                            <button
+                                v-if="isReserved"
+                                class="action-btn action-call"
+                                :disabled="isSeating"
+                                @click="seatGuests"
+                            >
+                                Пришли
                             </button>
                             <button class="action-btn action-edit" @click="emit('edit-booking')">
-                                <Icon name="lucide:pencil" class="w-4 h-4" />
                                 Редактировать
                             </button>
                         </div>
@@ -221,10 +253,11 @@ function handleOverlayClick(e: MouseEvent) {
                             </span>
                             <div class="flex items-center justify-between mt-1.5">
                                 <span class="text-sm font-bold text-white">
-                                    {{ format(new Date(nextReservation.startTime), 'HH:mm') }}
+                                    {{ format(new Date(nextReservation.startTime), "HH:mm") }}
                                 </span>
                                 <span class="text-xs text-muted">
-                                    {{ nextReservation.guest.name }} · {{ nextReservation.peopleCount }} гостя
+                                    {{ nextReservation.guest.name }} ·
+                                    {{ nextReservation.peopleCount }} гостя
                                 </span>
                             </div>
                         </div>

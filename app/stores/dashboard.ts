@@ -1,6 +1,7 @@
 import type { RestaurantLink, ZoneWithTables, TableWithStatus, ReservationWithDetails } from "~~/types"
 import type { Reservation, Guest } from "@prisma/client"
 import { format } from "date-fns"
+import { WORKING_HOURS_START, WORKING_HOURS_END } from '~/constants/workingHours'
 
 // Типы
 export type LoadLevel = 'low' | 'medium' | 'high' | 'peak'
@@ -106,7 +107,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
         const totalTables = allTables.value.length || 1
         const segments: HourlyLoad[] = []
 
-        for (let hour = 12; hour < 24; hour++) {
+        for (let hour = WORKING_HOURS_START; hour <= WORKING_HOURS_END; hour++) {
             // Считаем сколько бронирований активны в этот час
             const hourStart = new Date()
             hourStart.setHours(hour, 0, 0, 0)
@@ -114,6 +115,8 @@ export const useDashboardStore = defineStore('dashboard', () => {
             hourEnd.setHours(hour, 59, 59, 999)
 
             const activeReservations = reservations.value.filter(res => {
+                // Учитываем только подтверждённые и активные брони (не cancelled/finished)
+                if (res.status !== 'confirmed' && res.status !== 'seated') return false
                 const start = new Date(res.startTime)
                 const end = new Date(res.endTime)
                 // Бронь пересекается с этим часом

@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import type { TableWithStatus } from "~~/types"
+import { generateTimeSlots, BOOKING_DURATION_HOURS } from '~/constants/workingHours'
+import { format } from 'date-fns'
 
 const { showToast } = useToast()
 const store = useDashboardStore()
+const { selectedDate } = useDashboardDate()
 
 const props = defineProps<{
     table: TableWithStatus
@@ -14,6 +17,14 @@ const emit = defineEmits<{
 }>()
 
 const isSubmitting = ref(false)
+
+// Дата бронирования в формате yyyy-MM-dd (по умолчанию = выбранная дата в хедере)
+const bookingDate = ref(format(selectedDate.value, 'yyyy-MM-dd'))
+
+// Синхронизация при смене даты в хедере
+watch(selectedDate, (d) => {
+    bookingDate.value = format(d, 'yyyy-MM-dd')
+})
 
 const form = reactive({
     guestName: "",
@@ -78,15 +89,8 @@ function isGuestSelected(option: number | "5+") {
     return !showCustomPeopleInput.value && form.peopleCount === option
 }
 
-// ── Слоты времени (18:00–22:30, шаг 30 мин) ──
-const timeSlots = computed(() => {
-    const slots: string[] = []
-    for (let h = 18; h <= 22; h++) {
-        slots.push(`${h}:00`)
-        slots.push(`${h}:30`)
-    }
-    return slots
-})
+// ── Слоты времени (из констант рабочих часов) ──
+const timeSlots = computed(() => generateTimeSlots())
 
 // ── Занятые слоты (пересечение с существующими бронями на столе) ──
 const occupiedSlots = computed(() => {
@@ -95,7 +99,7 @@ const occupiedSlots = computed(() => {
         timeSlots.value.filter((slot) => {
             const parts = slot.split(":").map(Number)
             const slotStart = parts[0]! + parts[1]! / 60
-            const slotEnd = slotStart + 2 // бронь = 2 часа
+            const slotEnd = slotStart + BOOKING_DURATION_HOURS
 
             return reservations.some((res) => {
                 const resStart = new Date(res.startTime)
@@ -151,6 +155,7 @@ const handleFormSubmit = async () => {
             method: "POST",
             body: {
                 tableId: props.table.id,
+                date: bookingDate.value,
                 guestName: form.guestName.trim(),
                 guestPhone: rawPhone.value,
                 startTime: form.startTime,
@@ -186,6 +191,16 @@ const handleFormSubmit = async () => {
                     </p>
                 </div>
             </div>
+        </section>
+
+        <!-- ═══ ДАТА ═══ -->
+        <section>
+            <p class="section-label">Дата</p>
+            <input
+                v-model="bookingDate"
+                type="date"
+                class="field-input date-input"
+            />
         </section>
 
         <!-- ═══ ГОСТИ ═══ -->
@@ -404,6 +419,11 @@ const handleFormSubmit = async () => {
     opacity: 0.25;
     cursor: not-allowed;
     text-decoration: line-through;
+}
+
+/* ── Date input ── */
+.date-input {
+    color-scheme: dark;
 }
 
 /* ── Custom people input ── */

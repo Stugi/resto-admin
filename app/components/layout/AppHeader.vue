@@ -22,14 +22,12 @@ onMounted(() => {
     >
         <!-- ЛЕВАЯ ЧАСТЬ: Логотип -->
         <div class="flex items-center gap-4 cursor-default">
-            <div
-                class="w-10 h-10 bg-brand rounded-2xl flex items-center justify-center shadow-lg shadow-brand/10"
-            >
+            <div class="logo-icon">
                 <span class="text-2xl">🍽️</span>
             </div>
             <!-- Logo: 28px (text-3xl) Cormorant -->
             <h1 class="font-display text-3xl font-semibold tracking-tight text-white">
-                Resto<span class="text-brand">Admin</span>
+                Resto<span class="logo-text-gradient">Admin</span>
             </h1>
         </div>
 
@@ -100,3 +98,23 @@ onMounted(() => {
         </button>
     </header>
 </template>
+
+<style scoped>
+.logo-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dim));
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-brand) 20%, transparent);
+}
+
+.logo-text-gradient {
+    background: linear-gradient(135deg, var(--color-brand-light), var(--color-brand), var(--color-brand-dim));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+</style>

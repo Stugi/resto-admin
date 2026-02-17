@@ -1,19 +1,26 @@
 <script setup lang="ts">
+import { TIME_SLIDER_LABELS, WORKING_HOURS_START, WORKING_HOURS_END } from '~/constants/workingHours'
+import { isToday } from 'date-fns'
+
 const store = useDashboardStore()
 const { selectedDate } = useDashboardDate()
 
-const labels = ["12:00", "14:00", "16:00", "18:00", "20:00", "22:00", "00:00"]
-
 // Heatmap данные из store (реальные данные на основе бронирований)
 const heatmapSegments = computed(() => {
+    const currentHour = new Date().getHours()
+    const isTodaySelected = isToday(selectedDate.value)
+
     return store.hourlyLoad.map(segment => ({
         ...segment,
-        height: Math.max(4, segment.load * 0.32) // минимум 4px, максимум ~32px
+        height: Math.max(4, segment.load * 0.32), // минимум 4px, максимум ~32px
+        isPast: isTodaySelected && segment.hour < currentHour // прошедший час — серый
     }))
 })
 
+const sliderMax = WORKING_HOURS_END + 0.75 // 23.75
+
 const thumbPosition = computed(() => {
-    return ((store.viewTimeValue - 12) / (23.75 - 12)) * 100
+    return ((store.viewTimeValue - WORKING_HOURS_START) / (sliderMax - WORKING_HOURS_START)) * 100
 })
 
 function jumpToHour(hour: number) {
@@ -59,6 +66,7 @@ watch(() => store.viewTimeValue, () => {
                             v-for="segment in heatmapSegments"
                             :key="segment.hour"
                             class="heatmap-segment flex-1 flex flex-col items-center justify-end pb-0.5 cursor-pointer hover:bg-white/5 transition-colors relative"
+                            :class="{ 'is-past': segment.isPast }"
                             @click="jumpToHour(segment.hour)"
                         >
                             <!-- Час сверху -->
@@ -68,12 +76,14 @@ watch(() => store.viewTimeValue, () => {
                             <!-- Бар загрузки -->
                             <div
                                 class="heatmap-bar w-[70%] rounded-t-sm transition-all duration-300"
-                                :class="{
-                                    'bg-success': segment.level === 'low',
-                                    'bg-amber-400': segment.level === 'medium',
-                                    'bg-rose-400': segment.level === 'high',
-                                    'bg-danger': segment.level === 'peak'
-                                }"
+                                :class="segment.isPast
+                                    ? 'bg-muted/40'
+                                    : {
+                                        'bg-success': segment.level === 'low',
+                                        'bg-amber-400': segment.level === 'medium',
+                                        'bg-rose-400': segment.level === 'high',
+                                        'bg-danger': segment.level === 'peak'
+                                    }"
                                 :style="{ height: `${segment.height}px` }"
                             ></div>
                         </div>
@@ -83,8 +93,8 @@ watch(() => store.viewTimeValue, () => {
                     <input
                         type="range"
                         v-model.number="store.viewTimeValue"
-                        min="12"
-                        max="23.75"
+                        :min="WORKING_HOURS_START"
+                        :max="sliderMax"
                         step="0.25"
                         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                     />
@@ -104,7 +114,7 @@ watch(() => store.viewTimeValue, () => {
                 <!-- Подписи часов -->
                 <div class="flex justify-between px-1">
                     <span
-                        v-for="label in labels"
+                        v-for="label in TIME_SLIDER_LABELS"
                         :key="label"
                         class="text-[10px] text-muted"
                     >
@@ -133,6 +143,11 @@ watch(() => store.viewTimeValue, () => {
 </template>
 
 <style scoped>
+/* Прошедшие часы — приглушённые */
+.heatmap-segment.is-past {
+    opacity: 0.45;
+}
+
 /* Убираем стандартные стили слайдера */
 input[type="range"]::-webkit-slider-thumb {
     appearance: none;

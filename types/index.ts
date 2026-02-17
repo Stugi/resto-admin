@@ -40,7 +40,7 @@ export interface ZoneElement {
 // ============ СТОЛЫ ============
 
 // Определяем возможные статусы
-export type TableStatus = 'free' | 'busy' | 'reserved'
+export type TableStatus = 'free' | 'busy' | 'reserved' | 'soon'
 
 // Формы столов на схеме зала
 export type TableShape = 'round' | 'square' | 'rect'
