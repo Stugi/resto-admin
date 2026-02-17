@@ -59,8 +59,9 @@ export const useDashboardStore = defineStore('dashboard', () => {
     // UI state
     const activeZoneId = ref<string | null>(null)
     const selectedTableId = ref<string | null>(null)
+    const bookingTableId = ref<string | null>(null)
     const tableFilter = ref<TableFilter>('all')
-    const viewMode = ref<ViewMode>('grid')
+    const viewMode = useLocalStorage<ViewMode>('resto:viewMode', 'schema')
     const rightSidebarTab = ref<RightSidebarTab>('booking')
 
     // Mobile UI state
@@ -138,9 +139,14 @@ export const useDashboardStore = defineStore('dashboard', () => {
         zones.value.find(z => z.id === activeZoneId.value)
     )
 
-    // Выбранный стол
+    // Выбранный стол (для модала информации)
     const selectedTable = computed(() =>
         allTables.value.find(t => t.id === selectedTableId.value)
+    )
+
+    // Стол в режиме бронирования (для формы в сайдбаре)
+    const bookingTable = computed(() =>
+        allTables.value.find(t => t.id === bookingTableId.value)
     )
 
     /**
@@ -194,6 +200,17 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
     function selectTable(tableId: string | null) {
         selectedTableId.value = tableId
+    }
+
+    /** Открыть форму бронирования для стола */
+    function startBooking(tableId: string) {
+        bookingTableId.value = tableId
+        selectedTableId.value = null // закрыть модал информации
+    }
+
+    /** Закрыть форму бронирования */
+    function cancelBooking() {
+        bookingTableId.value = null
     }
 
     function setActiveZone(zoneId: string | null) {
@@ -286,7 +303,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
         activeZoneId.value = null
         selectedTableId.value = null
         tableFilter.value = 'all'
-        viewMode.value = 'grid'
+        viewMode.value = 'schema'
         rightSidebarTab.value = 'booking'
         error.value = null
         viewTimeValue.value = getCurrentTimeValue()
@@ -305,6 +322,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
         error,
         activeZoneId,
         selectedTableId,
+        bookingTableId,
         tableFilter,
         viewMode,
         rightSidebarTab,
@@ -319,12 +337,15 @@ export const useDashboardStore = defineStore('dashboard', () => {
         hourlyLoad,
         currentZone,
         selectedTable,
+        bookingTable,
         filteredTables,
 
         // Actions
         setViewTime,
         setRestaurant,
         selectTable,
+        startBooking,
+        cancelBooking,
         setActiveZone,
         setTableFilter,
         setViewMode,

@@ -22,10 +22,10 @@
         </section>
 
         <!-- 2. Легенда статусов -->
-        <section class="sidebar-section">
+        <!-- <section class="sidebar-section">
             <h3 class="section-title">Статусы столов</h3>
             <TableStatusLegend />
-        </section>
+        </section> -->
 
         <!-- 3. Список столов (растягивается) -->
         <section class="sidebar-section flex-1 min-h-0 flex flex-col">

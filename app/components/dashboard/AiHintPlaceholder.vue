@@ -9,7 +9,7 @@
 </script>
 
 <template>
-    <div class="ai-placeholder">
+    <div class="ai-placeholder shrink-0">
         <div class="placeholder-icon">
             <Icon name="lucide:sparkles" class="text-xl" />
         </div>

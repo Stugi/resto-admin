@@ -18,6 +18,12 @@ const { selectedDate } = useDashboardDate()
 const { showToast } = useToast()
 const { isDesktop } = useBreakpoint()
 
+/** Конфиг кнопок переключения вида */
+const VIEW_MODES = [
+    { key: 'grid', icon: 'lucide:layout-grid', title: 'Карточки' },
+    { key: 'schema', icon: 'lucide:map', title: 'Схема зала' },
+] as const
+
 /**
  * 🎓 Типизированный роут благодаря experimental.typedPages
  *
@@ -57,6 +63,7 @@ const handleZoneChange = (zoneId: string) => {
 
 // 🎓 async функция — после успеха обновляем данные
 const handleSuccess = async () => {
+    store.cancelBooking()
     store.selectTable(null)
     await store.fetchData(selectedDate.value)
     showToast("Бронирование создано!", "success")
@@ -127,20 +134,14 @@ definePageMeta({
                         <!-- Кнопки управления видом -->
                         <div class="flex gap-1 p-1 bg-surface rounded-lg border border-white-5">
                             <button
+                                v-for="mode in VIEW_MODES"
+                                :key="mode.key"
                                 class="view-btn"
-                                :class="{ 'is-active': store.viewMode === 'grid' }"
-                                title="Карточки"
-                                @click="store.setViewMode('grid')"
+                                :class="{ 'is-active': store.viewMode === mode.key }"
+                                :title="mode.title"
+                                @click="store.setViewMode(mode.key)"
                             >
-                                <Icon name="lucide:layout-grid" class="w-4 h-4" />
-                            </button>
-                            <button
-                                class="view-btn"
-                                :class="{ 'is-active': store.viewMode === 'schema' }"
-                                title="Схема зала"
-                                @click="store.setViewMode('schema')"
-                            >
-                                <Icon name="lucide:map" class="w-4 h-4" />
+                                <Icon :name="mode.icon" class="w-4 h-4" />
                             </button>
                         </div>
                     </div>
@@ -218,6 +219,16 @@ definePageMeta({
             <!-- Drawer: меню навигации -->
             <MobileMenuDrawer />
         </template>
+
+        <!-- Модал информации о столе — работает на обоих layout-ах -->
+        <TableInfoModal
+            :table="store.selectedTable ?? null"
+            :zone-name="store.currentZone?.name ?? ''"
+            :is-open="!!store.selectedTable"
+            @close="store.selectTable(null)"
+            @create-booking="store.startBooking(store.selectedTableId!)"
+            @edit-booking="store.startBooking(store.selectedTableId!)"
+        />
     </div>
 </template>
 

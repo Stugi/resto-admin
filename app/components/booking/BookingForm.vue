@@ -24,48 +24,47 @@ const form = reactive({
 
 // ── Ошибки валидации (inline, под полями) ──
 const errors = reactive({
-    guestName: '',
-    guestPhone: '',
+    guestName: "",
+    guestPhone: "",
 })
 
 // Сброс ошибки при вводе
-watch(() => form.guestName, () => { errors.guestName = '' })
+watch(
+    () => form.guestName,
+    () => {
+        errors.guestName = ""
+    },
+)
 
 // ── Маска телефона ──
-const {
-    displayPhone,
-    rawPhone,
-    isPhoneValid,
-    onPhoneInput,
-    onPhoneKeydown,
-    onPhoneFocus,
-} = usePhoneMask()
+const { displayPhone, rawPhone, isPhoneValid, onPhoneInput, onPhoneKeydown, onPhoneFocus } =
+    usePhoneMask()
 
-watch(rawPhone, () => { errors.guestPhone = '' })
+watch(rawPhone, () => {
+    errors.guestPhone = ""
+})
 
 // ── Название зоны для карточки стола ──
 const zoneName = computed(() => {
-    const zone = store.zones.find(z =>
-        z.tables.some(t => t.id === props.table.id)
-    )
-    return zone?.name ?? ''
+    const zone = store.zones.find((z) => z.tables.some((t) => t.id === props.table.id))
+    return zone?.name ?? ""
 })
 
 // ── Варианты гостей (динамически по capacity) ──
-const guestOptions = computed((): (number | '5+')[] => {
+const guestOptions = computed((): (number | "5+")[] => {
     const max = props.table.capacity
-    const options: (number | '5+')[] = []
+    const options: (number | "5+")[] = []
     for (let i = 1; i <= Math.min(max, 4); i++) {
         options.push(i)
     }
-    if (max > 4) options.push('5+')
+    if (max > 4) options.push("5+")
     return options
 })
 
 const showCustomPeopleInput = ref(false)
 
-function selectGuests(option: number | '5+') {
-    if (option === '5+') {
+function selectGuests(option: number | "5+") {
+    if (option === "5+") {
         showCustomPeopleInput.value = true
         form.peopleCount = 5
     } else {
@@ -74,8 +73,8 @@ function selectGuests(option: number | '5+') {
     }
 }
 
-function isGuestSelected(option: number | '5+') {
-    if (option === '5+') return showCustomPeopleInput.value
+function isGuestSelected(option: number | "5+") {
+    if (option === "5+") return showCustomPeopleInput.value
     return !showCustomPeopleInput.value && form.peopleCount === option
 }
 
@@ -93,19 +92,19 @@ const timeSlots = computed(() => {
 const occupiedSlots = computed(() => {
     const reservations = props.table.reservations ?? []
     return new Set(
-        timeSlots.value.filter(slot => {
-            const parts = slot.split(':').map(Number)
+        timeSlots.value.filter((slot) => {
+            const parts = slot.split(":").map(Number)
             const slotStart = parts[0]! + parts[1]! / 60
             const slotEnd = slotStart + 2 // бронь = 2 часа
 
-            return reservations.some(res => {
+            return reservations.some((res) => {
                 const resStart = new Date(res.startTime)
                 const resEnd = new Date(res.endTime)
                 const resStartH = resStart.getHours() + resStart.getMinutes() / 60
                 const resEndH = resEnd.getHours() + resEnd.getMinutes() / 60
                 return slotStart < resEndH && slotEnd > resStartH
             })
-        })
+        }),
     )
 })
 
@@ -121,23 +120,22 @@ function selectTime(slot: string) {
 // Если текущий выбранный слот стал занят — сбрасываем на первый свободный
 watch(occupiedSlots, (occupied) => {
     if (occupied.has(form.startTime)) {
-        const freeSlot = timeSlots.value.find(s => !occupied.has(s))
+        const freeSlot = timeSlots.value.find((s) => !occupied.has(s))
         if (freeSlot) form.startTime = freeSlot
     }
 })
 
 // ── Валидация ──
 function validate(): boolean {
-    errors.guestName = ''
-    errors.guestPhone = ''
+    errors.guestName = ""
+    errors.guestPhone = ""
 
     if (!form.guestName.trim()) {
-        errors.guestName = 'Введите имя гостя'
+        errors.guestName = "Введите имя гостя"
     }
     if (!isPhoneValid.value) {
-        errors.guestPhone = rawPhone.value.length <= 1
-            ? 'Введите номер телефона'
-            : 'Введите номер полностью'
+        errors.guestPhone =
+            rawPhone.value.length <= 1 ? "Введите номер телефона" : "Введите номер полностью"
     }
 
     return !errors.guestName && !errors.guestPhone
@@ -183,7 +181,9 @@ const handleFormSubmit = async () => {
                 </div>
                 <div>
                     <p class="table-card-title">Стол №{{ table.name }}</p>
-                    <p class="table-card-sub">{{ table.capacity }} мест<span v-if="zoneName"> · {{ zoneName }}</span></p>
+                    <p class="table-card-sub">
+                        {{ table.capacity }} мест<span v-if="zoneName"> · {{ zoneName }}</span>
+                    </p>
                 </div>
             </div>
         </section>
@@ -278,25 +278,17 @@ const handleFormSubmit = async () => {
             </div>
         </section>
 
-        <!-- ═══ КНОПКИ ═══ -->
-        <div class="actions">
-            <button
-                type="button"
-                class="btn-cancel"
-                @click="emit('cancel')"
-            >
-                Отмена
-            </button>
-            <button
-                type="submit"
-                class="btn-submit"
-                :disabled="isSubmitting"
-            >
+        <!-- ═══ КНОПКИ (sticky внизу сайдбара) ═══ -->
+        <div class="actions-sticky">
+            <button type="button" class="btn-cancel" @click="emit('cancel')">Отмена</button>
+            <button type="submit" class="btn-submit" :disabled="isSubmitting">
                 <span v-if="isSubmitting" class="flex items-center justify-center gap-2">
-                    <span class="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                    <span
+                        class="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"
+                    />
                     ...
                 </span>
-                <span v-else>✓ Забронировать</span>
+                <span v-else>Забронировать</span>
             </button>
         </div>
     </form>
@@ -367,11 +359,21 @@ const handleFormSubmit = async () => {
     gap: var(--spacing-2);
 }
 
-.chip-grid.cols-1 { grid-template-columns: repeat(1, 1fr); }
-.chip-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
-.chip-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
-.chip-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
-.chip-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
+.chip-grid.cols-1 {
+    grid-template-columns: repeat(1, 1fr);
+}
+.chip-grid.cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+.chip-grid.cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+.chip-grid.cols-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+.chip-grid.cols-5 {
+    grid-template-columns: repeat(5, 1fr);
+}
 
 .chip {
     padding: var(--spacing-2_5) var(--spacing-2);
@@ -456,12 +458,17 @@ const handleFormSubmit = async () => {
     font-weight: 500;
 }
 
-/* ── Action buttons ── */
-.actions {
+/* ── Action buttons (sticky внизу при скролле) ── */
+.actions-sticky {
+    position: sticky;
+    bottom: 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--spacing-3);
-    padding-top: var(--spacing-2);
+    padding: var(--spacing-4) 0;
+    background: var(--color-surface);
+    /* Тень сверху для визуального отделения от контента */
+    box-shadow: 0 -8px 16px var(--color-surface);
 }
 
 .btn-cancel {

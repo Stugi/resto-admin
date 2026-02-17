@@ -49,7 +49,7 @@ const handleTableClick = (tableId: string) => {
             >
                 <!-- Цветной индикатор статуса -->
                 <span v-if="tab.color" class="w-2 h-2 rounded-full" :class="tab.color" />
-                <span class="text-2xs font-medium" v-else>{{ tab.label }}</span>
+                <span class="text-2xs font-medium">{{ tab.label }}</span>
             </button>
         </div>
 
