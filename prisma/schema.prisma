@@ -33,6 +33,10 @@ model Restaurant {
   // Связи
   schedules Schedule[]
   zones     Zone[]
+  apiKeys   ApiKey[]
+
+  // Whitelist доменов для CORS публичного API
+  allowedOrigins String[] @default([]) @map("allowed_origins")
 
   // Служебные поля
   createdAt DateTime  @default(now()) @map("created_at")
@@ -144,6 +148,28 @@ model Reservation {
   deletedBy String?   @map("deleted_by")
 
   @@map("reservations")
+}
+
+// 8. API ключи для публичного API
+model ApiKey {
+  id           String     @id @default(uuid())
+  restaurantId String     @map("restaurant_id")
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  name      String // Человекочитаемое имя ключа: "Сайт ресторана", "Iiko интеграция"
+  keyHash   String @unique @map("key_hash") // SHA-256 хэш ключа
+  prefix    String @map("prefix") // Первые 8 символов для отображения в UI
+
+  scope     String @default("server") @map("scope") // 'server' | 'public_widget'
+
+  lastUsedAt DateTime? @map("last_used_at")
+  revokedAt  DateTime? @map("revoked_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String?  @map("created_by")
+
+  @@index([restaurantId])
+  @@map("api_keys")
 }
 
 // TODO: Worker статистики — отложено на потом
